@@ -32,4 +32,9 @@ services:
     app.Message:
         public: true
         class: AppBundle\Utils\Message
+        arguments: ['@doctrine.orm.entity_manager', '@session']
+
+    app.OnlineUser:
+        public: true
+        class: AppBundle\Utils\UserOnline
         arguments: ['@doctrine.orm.entity_manager']

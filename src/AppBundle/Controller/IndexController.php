@@ -19,7 +19,6 @@ class IndexController extends Controller
         }
         // replace this example code with whatever you need
         return $this->render('index/index.html.twig', [
-            'locale' => $request->getLocale()
         ]);
     }
 }

@@ -1,0 +1,17 @@
+{% extends '::base.html.twig' %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('css/style.css') }}">
+{% endblock %}
+
+{% block content %}
+    <div class="row chat">
+        <div class="col-xs-7 col-md-9">
+            tu będą wiadomości
+        </div>
+        <div class="col-xs-5 col-md-3">
+            tu będą użytkownicy online
+        </div>
+    </div>
+
+{% endblock %}

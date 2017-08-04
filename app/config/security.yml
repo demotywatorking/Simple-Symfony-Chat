@@ -17,6 +17,10 @@ security:
             form_login:
                 provider: fos_userbundle
                 csrf_token_generator: security.csrf.token_manager
+                login_path: /login
+                check_path: /login_check
+                always_use_default_target_path: false
+                default_target_path: add_online
 
             logout:       true
             anonymous:    true
@@ -24,5 +28,5 @@ security:
     access_control:
         - { path: ^/login$, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/register, role: IS_AUTHENTICATED_ANONYMOUSLY }
-        - { path: ^/resetting, role: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/chat, role: ROLE_USER }
+        - { path: ^/admin, role: ROLE_ADMIN }

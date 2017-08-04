@@ -11,15 +11,18 @@ use Symfony\Component\HttpFoundation\Response;
 class ChatController extends Controller
 {
     /**
-     * @Route("/chat/{id}", name="chat_index")
-     *
-     * @param int $lastid Last message's Id
+     * @Route("/chat/", name="chat_index")
      *
      * @return Response Return view with last messages
      */
-    public function showAction(int $id = 0): Response
+    public function showAction(): Response
     {
-        return new Response('Tu będą wyświetlane wiadomości');
+        $message = $this->get('app.Message')
+                    ->getNewMessages();
+
+        return $this->render('chat/index.html.twig',[
+            'messages' => $message
+        ]);
     }
 
     /**
