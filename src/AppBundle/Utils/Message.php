@@ -7,7 +7,7 @@ use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 class Message
 {
-    private const MAX_MESSAGES = 32;
+    const MAX_MESSAGES = 32;
     private $em;
     private $session;
 
@@ -17,28 +17,23 @@ class Message
         $this->session = $session;
     }
 
-    public function getNewMessages()
-    {
-        $lastId = $this->session->get('lastid');
-
-        if (!$lastId) {
-            return $this->getMessagesFromLastDay();
-        }
-        return $this->getMessagesFromLastId($lastId);
-    }
-
-    private function getMessagesFromLastDay()
+    public function getMessagesInIndex()
     {
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastDay(self::MAX_MESSAGES);
 
         $lastId = end($messages);
-        $this->session->set('lastid', $lastId->getId());
+        if ($lastId) {
+            $this->session->set('lastid', $lastId->getId());
+        } else {
+            $this->session->set('lastid', 0);
+        }
+
 
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
 
-    private function getMessagesFromLastId(int $lastId)
+    public function getMessagesFromLastId(int $lastId)
     {
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastId($lastId, self::MAX_MESSAGES);
@@ -48,6 +43,7 @@ class Message
 
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
+
         return $messages;
     }
 }

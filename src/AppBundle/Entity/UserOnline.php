@@ -35,6 +35,19 @@ class UserOnline
      */
     private $onlineTime;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userOnline")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     */
+    private $userInfo;
+
+    /**
+     * @return string
+     */
+    public function getUserName(): string
+    {
+        return $this->userInfo->getUsername();
+    }
 
     /**
      * Get id
@@ -85,6 +98,14 @@ class UserOnline
     }
 
     /**
+     * @return mixed
+     */
+    public function getUserInfo()
+    {
+        return $this->userInfo;
+    }
+
+    /**
      * Get onlineTime
      *
      * @return \DateTime
@@ -92,6 +113,11 @@ class UserOnline
     public function getOnlineTime()
     {
         return $this->onlineTime;
+    }
+
+    public function setUserInfo($userInfo)
+    {
+        $this->userInfo = $userInfo;
     }
 }
 

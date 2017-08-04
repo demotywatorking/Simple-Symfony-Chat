@@ -1,6 +1,6 @@
 {% extends "::base.html.twig" %}
 {% trans_default_domain 'FOSUserBundle' %}
-{%  block container %}
+{%  block content %}
 {{ form_start(form, {'method': 'post', 'action': path('fos_user_registration_register'), 'attr': {'class': 'fos_user_registration_register'}}) }}
     {{ form_widget(form) }}
 <div>

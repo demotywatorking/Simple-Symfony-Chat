@@ -17,11 +17,18 @@ class ChatController extends Controller
      */
     public function showAction(): Response
     {
-        $message = $this->get('app.Message')
-                    ->getNewMessages();
+        $userId = $this->getUser()->getId();
+
+        $messages = $this->get('app.Message')
+                    ->getMessagesInIndex();
+
+        $online = $this->get('app.OnlineUsers');
+        $usersOnline = $online->getOnlineUsers($userId);
+        $online->updateUserOnline($userId);
 
         return $this->render('chat/index.html.twig',[
-            'messages' => $message
+            'messages' => $messages,
+            'usersOnline' => $usersOnline
         ]);
     }
 
@@ -36,5 +43,18 @@ class ChatController extends Controller
     {
         $message = $this->get('app.Message');
         return new JsonResponse('0');
+    }
+
+    /**
+     * Delete User's info from online users in database
+     *
+     * @Route("/chat/logout", name="chat_logout")
+     */
+    public function logoutAction()
+    {
+        $online = $this->get('app.OnlineUsers');
+        $online->deleteUserWhenLogout($this->getUser()->getId());
+
+        return $this->redirectToRoute('fos_user_security_logout');
     }
 }

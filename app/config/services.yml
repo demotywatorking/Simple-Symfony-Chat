@@ -1,7 +1,5 @@
 # Learn more about services, parameters and containers at
 # https://symfony.com/doc/current/service_container.html
-parameters:
-    #parameter_name: value
 
 services:
     # default configuration for services in *this* file
@@ -34,7 +32,10 @@ services:
         class: AppBundle\Utils\Message
         arguments: ['@doctrine.orm.entity_manager', '@session']
 
-    app.OnlineUser:
+    app.OnlineUsers:
         public: true
         class: AppBundle\Utils\UserOnline
-        arguments: ['@doctrine.orm.entity_manager']
+        arguments: ['@doctrine.orm.entity_manager', '@app.ChatConfig']
+    app.ChatConfig:
+        public: true
+        class: AppBundle\Utils\ChatConfig

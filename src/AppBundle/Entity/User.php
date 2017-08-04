@@ -19,6 +19,11 @@ class User extends BaseUser
      */
     protected $id;
 
+    /**
+     * @ORM\OneToMany(targetEntity="UserOnline", mappedBy="userInfo")
+     */
+    protected $userOnline;
+
     public function __construct()
     {
         parent::__construct();

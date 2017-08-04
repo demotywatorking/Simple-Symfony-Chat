@@ -7,10 +7,18 @@
 {% block content %}
     <div class="row chat">
         <div class="col-xs-7 col-md-9">
-            tu będą wiadomości
+            tu będą wiadomości<br />
+            {%  for message in messages %}
+                {{ message.text }}
+                <br />
+            {% endfor %}
         </div>
         <div class="col-xs-5 col-md-3">
-            tu będą użytkownicy online
+            Tu będą gracze online<br />
+            {%  for user in usersOnline %}
+                {{ user.userName }}
+                <br />
+            {% endfor %}
         </div>
     </div>
 

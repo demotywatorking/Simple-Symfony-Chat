@@ -1,7 +1,7 @@
 {% extends "::base.html.twig" %}
 {% trans_default_domain 'FOSUserBundle' %}
 
-{% block containter %}
+{% block content %}
     <div class="jumbotron">
         <p>{{ 'registration.confirmed'|trans({'%username%': user.username}) }}</p>
         {% if targetUrl %}
