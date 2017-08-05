@@ -23,6 +23,11 @@ class User extends BaseUser
      */
     protected $userOnline;
 
+    /**
+     * @ORM\OneToMany(targetEntity="Message", mappedBy="userInfo")
+     */
+    protected $userMessage;
+
     public function __construct()
     {
         parent::__construct();

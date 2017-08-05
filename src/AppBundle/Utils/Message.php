@@ -40,6 +40,23 @@ class Message
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
 
+    public function addMessageToDatabase($user, int $channel, string $text):bool
+    {
+        $message = new \AppBundle\Entity\Message();
+        $message->setUserInfo($user);
+        $message->setChannel($channel);
+        $message->setText($text);
+        $message->setDate(new \DateTime());
+        $this->em->getRepository('AppBundle:Message');
+        try {
+            $this->em->persist($message);
+            $this->em->flush();
+        } catch(\Throwable $e) {
+            return 0;
+        }
+        return 1;
+    }
+
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
 

@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
 class ChatController extends Controller
@@ -16,19 +17,25 @@ class ChatController extends Controller
      */
     public function showAction(): Response
     {
-        $userId = $this->getUser()->getId();
+        $user = $this->getUser();
         $channel = $this->get('session')->get('channel');
 
         $messages = $this->get('app.Message')
                     ->getMessagesInIndex();
 
         $online = $this->get('app.OnlineUsers');
-        $usersOnline = $online->getOnlineUsers($userId, $channel);
-        $online->updateUserOnline($userId, $channel);
+        $usersOnline = $online->getOnlineUsers($user->getId(), $channel);
+
+        try {
+            $online->updateUserOnline($user->getId(), $channel);
+        } catch (\Throwable $e) {
+            return $this->redirectToRoute('fos_user_security_logout');
+        }
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
-            'usersOnline' => $usersOnline
+            'usersOnline' => $usersOnline,
+            'user' => $user
         ]);
     }
 
@@ -39,10 +46,16 @@ class ChatController extends Controller
      *
      * @return JsonResponse returning status success or failure with description why
      */
-    public function addAction(): JsonResponse
+    public function addAction(Request $request): JsonResponse
     {
+        $messageText = $request->get('text');
+        $user = $this->getUser();
+        $channel = $this->get('session')->get('channel');
+
         $message = $this->get('app.Message');
-        return new JsonResponse('json');
+        $status = $message->addMessageToDatabase($user, $channel, $messageText);
+
+        return new JsonResponse($status);
     }
 
     /**

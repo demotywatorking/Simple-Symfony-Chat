@@ -3,6 +3,10 @@
 {% block javascripts %}
     <script>
         var sendPath = '{{ url('chat_add') }}';
+        var self = {
+          'username' : '{{ user.username }}',
+        {#'role' : {{ user.getRole }}#}
+        };
     </script>
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
 {% endblock %}
@@ -11,22 +15,37 @@
 {% endblock %}
 
 {% block content %}
-    <div class="row chat">
-        <div class="col-xs-7 col-md-9">
-            tu będą wiadomości<br />
-            {%  for message in messages %}
-                {{ message.text }}
-                <br />
-            {% endfor %}
+    <div class="row chat" id="chat-row-main">
+        <div class="col-xs-12" id="info-box">
+        </div>
+
+        <div class="col-xs-7 col-md-9" id="messages">
+            <div class="panel panel-success" id="panel-messages">
+                <div class="panel-heading text-center">
+                    WIADOMOŚCI
+                </div>
+                <div class="panel-body" id="messages-box">
+                    {%  for message in messages %}
+                        <div>{{ message.text }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-5 col-md-3" id="online-users">
+            <div class="panel panel-success" id="panel-users">
+                <div class="panel-heading text-center">
+                    GRACZE ONLINE
+                </div>
+                <div class="panel-body">
+                    {%  for user in usersOnline %}
+                        <div class="{{ user.role }}">{{ user.userName }}</div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-12">
             <input type="text" class="form-control" id="message-text">
             <button class="btn btn-success" id="send">Wyślij</button>
-        </div>
-        <div class="col-xs-5 col-md-3">
-            Tu będą gracze online<br />
-            {%  for user in usersOnline %}
-                <div class="{{ user.role }}">{{ user.userName }}</div>
-                <br />
-            {% endfor %}
         </div>
     </div>
 

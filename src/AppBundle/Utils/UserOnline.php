@@ -54,6 +54,9 @@ class UserOnline
                         ->findOneBy([
                             'userId' => $id
                         ]);
+        if (!$online) {
+            throw \Throwable();
+        }
         $online->setOnlineTime(new \DateTime('now'));
         $online->setChannel($channel);
 

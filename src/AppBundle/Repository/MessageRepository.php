@@ -24,7 +24,7 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
 
         return $this->createQueryBuilder('m')
                 ->where('m.date >= :date')
-                ->orderBy('m.date', 'DESC')
+                ->orderBy('m.date', 'ASC')
                 ->setMaxResults($limit)
                 ->setParameter('date', $date)
                 ->getQuery()->getResult();
@@ -35,7 +35,7 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
     {
         return $this->createQueryBuilder('m')
             ->where('m.id > :id')
-            ->orderBy('m.date', 'DESC')
+            ->orderBy('m.date', 'ASC')
             ->setMaxResults($limit)
             ->setParameter('id', $lastId)
             ->getQuery()->getResult();

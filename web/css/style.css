@@ -1,5 +1,38 @@
+html, body
+{
+    background:#777777;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+
 .chat {
-    padding-top: 50px;
+    padding-top:30px;
+    height: 100%;
+    overflow:hidden;
+}
+
+#chat-main-page {
+    height: auto;
+    min-height:100%;
+}
+
+#messages, #online-users, #panel-messages, #panel-users {
+    height:90%;
+}
+
+
+
+
+
+
+
+
+.message-error {
+    color: #a94442;
+    background-color: #f2dede;
+    border-color: #ebccd1;
+    padding-left:5px;
 }
 
 .administrator {
@@ -11,5 +44,5 @@
 }
 
 .user {
-    color: yellow;
+    color: brown;
 }

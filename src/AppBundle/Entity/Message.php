@@ -49,6 +49,18 @@ class Message
      */
     private $channel;
 
+    /**
+     * @ORM\ManyToOne(targetEntity="User", inversedBy="userMessage")
+     * @ORM\JoinColumn(name="user_id", referencedColumnName="id")
+     */
+    private $userInfo;
+
+    public function setUserInfo($userInfo)
+    {
+        $this->userInfo = $userInfo;
+
+        return $this;
+    }
 
     /**
      * Get id

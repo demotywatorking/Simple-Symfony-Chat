@@ -15,6 +15,11 @@ $(document).ready(function() {
             data: params
         }).done(function(msg){
             //TODO: check if message is good and show them
+            if (msg === false) {
+                $('#messages-box').append('<div class="message-error">An error occurred while sending message.</div>')
+            } else {
+                $('#messages-box').append('<div class="message">' + text + '</div>')
+            }
         });
     }
 
