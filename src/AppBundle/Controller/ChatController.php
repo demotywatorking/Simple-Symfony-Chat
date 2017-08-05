@@ -2,7 +2,6 @@
 
 namespace AppBundle\Controller;
 
-
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -42,7 +41,7 @@ class ChatController extends Controller
     public function addAction(): JsonResponse
     {
         $message = $this->get('app.Message');
-        return new JsonResponse('0');
+        return new JsonResponse('json');
     }
 
     /**

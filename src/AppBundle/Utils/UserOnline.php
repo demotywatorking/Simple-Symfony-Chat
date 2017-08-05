@@ -23,12 +23,20 @@ class UserOnline
      */
     public function addUserOnline($user)
     {
+        if ( $this->em->getRepository('AppBundle:UserOnline')
+            ->findOneBy([
+                'userId' => $user->getId()
+            ])
+        ) {
+            return;
+        }
+
         $online = new \AppBundle\Entity\UserOnline();
 
         $online->setUserId($user->getId());
         $online->setOnlineTime(new \DateTime('now'));
         $online->setUserInfo($user);
-        $this->em->getRepository('AppBundle:UserOnline');
+
         $this->em->persist($online);
         $this->em->flush();
     }

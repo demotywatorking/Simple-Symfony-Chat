@@ -36,6 +36,7 @@ services:
         public: true
         class: AppBundle\Utils\UserOnline
         arguments: ['@doctrine.orm.entity_manager', '@app.ChatConfig']
+
     app.ChatConfig:
         public: true
         class: AppBundle\Utils\ChatConfig

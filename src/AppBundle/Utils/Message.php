@@ -29,7 +29,6 @@ class Message
             $this->session->set('lastid', 0);
         }
 
-
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
 

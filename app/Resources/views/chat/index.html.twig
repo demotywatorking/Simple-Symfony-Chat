@@ -1,5 +1,11 @@
 {% extends '::base.html.twig' %}
 
+{% block javascripts %}
+    <script>
+        var sendPath = '{{ url('chat_add') }}';
+    </script>
+    <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
+{% endblock %}
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
 {% endblock %}
@@ -12,6 +18,8 @@
                 {{ message.text }}
                 <br />
             {% endfor %}
+            <input type="text" class="form-control" id="message-text">
+            <button class="btn btn-success" id="send">Wyślij</button>
         </div>
         <div class="col-xs-5 col-md-3">
             Tu będą gracze online<br />

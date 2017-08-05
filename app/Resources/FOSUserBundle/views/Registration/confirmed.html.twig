@@ -4,9 +4,6 @@
 {% block content %}
     <div class="jumbotron">
         <p>{{ 'registration.confirmed'|trans({'%username%': user.username}) }}</p>
-        {% if targetUrl %}
-            <p><a href="{{ targetUrl }}">{{ 'registration.back'|trans }}</a></p>{{ 'index.or'|trans({}, 'app') }}
-        {% endif %}
-        <a href="{{ path("add") }}" class="btn btn-info">{{ 'index.add'|trans({}, 'app') }}</a>
+        <a href="{{ path("chat_index") }}" class="btn btn-info">Przejdź do chatu</a>
     </div>
 {% endblock %}
