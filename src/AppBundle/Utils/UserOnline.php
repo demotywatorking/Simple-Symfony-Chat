@@ -19,13 +19,14 @@ class UserOnline
      * Method add user's info to user_online table. I am doing it because I will know when user is disconnected from chat
      * for long time
      *
-     * @param int $id User's Id
+     *
      */
-    public function addUserOnline($user)
+    public function addUserOnline($user, int $channel)
     {
         if ( $this->em->getRepository('AppBundle:UserOnline')
             ->findOneBy([
-                'userId' => $user->getId()
+                'userId' => $user->getId(),
+                'channel' => $channel
             ])
         ) {
             return;
@@ -36,6 +37,7 @@ class UserOnline
         $online->setUserId($user->getId());
         $online->setOnlineTime(new \DateTime('now'));
         $online->setUserInfo($user);
+        $online->setChannel($channel);
 
         $this->em->persist($online);
         $this->em->flush();
@@ -46,13 +48,14 @@ class UserOnline
      *
      * @param $id User's Id
      */
-    public function updateUserOnline($id)
+    public function updateUserOnline(int $id, int $channel)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
                         ->findOneBy([
                             'userId' => $id
                         ]);
         $online->setOnlineTime(new \DateTime('now'));
+        $online->setChannel($channel);
 
         $this->em->persist($online);
         $this->em->flush();
@@ -64,18 +67,11 @@ class UserOnline
      * @param int $id User's Id
      * @return array array of online Users
      */
-    public function getOnlineUsers(int $id)
+    public function getOnlineUsers(int $id, int $channel)
     {
-        $this->deleteInactiveUsers($id);
+        $this->deleteInactiveUsers($id, $channel);
         $usersOnline = $this->em->getRepository('AppBundle:UserOnline')
             ->findAll();
-        foreach ($usersOnline as $user) {
-           // $user->setUsername($user->getUserInfo()->getUsername());
-        }
-        /**
-         * TODO:
-         * relationship with user, get user name etc.
-         */
 
         return $usersOnline;
     }
@@ -84,7 +80,7 @@ class UserOnline
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
             ->findOneBy([
-                'userId' => $id
+                'userId' => $id,
             ]);
         $this->em->remove($online);
         $this->em->flush();
@@ -95,12 +91,12 @@ class UserOnline
      *
      * @param int $id User's Id
      */
-    private function deleteInactiveUsers(int $id)
+    private function deleteInactiveUsers(int $id, int $channel)
     {
         $time = new \DateTime('now');
         $time->modify('-'.$this->config->getInactiveTime().'sec');
 
         $this->em->getRepository('AppBundle:UserOnline')
-                ->deleteInactiveUsers($time, $id);
+                ->deleteInactiveUsers($time, $id, $channel);
     }
 }

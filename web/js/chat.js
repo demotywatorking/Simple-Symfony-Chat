@@ -1,17 +1,19 @@
 $(document).ready(function() {
     function sendMessage() {
         var text = $('#message-text').val();
-
+        if (text === '') {
+            return;
+        }
         var params = {
             'text' : text
         };
+        $('#message-text').val('');
         $.ajax({
             type: "POST",
             dataType: "json",
             url: sendPath,
             data: params
         }).done(function(msg){
-            $('#message-text').val('');
             //TODO: check if message is good and show them
         });
     }

@@ -15,8 +15,9 @@ class SecurityController extends Controller
      */
     public function addOnlineUserAction()
     {
+        $this->get('session')->set('channel', 1);
         $online = $this->get('app.OnlineUsers');
-        $online->addUserOnline($this->getUser());
+        $online->addUserOnline($this->getUser(), 1);
         return $this->redirectToRoute('chat_index');
     }
 }

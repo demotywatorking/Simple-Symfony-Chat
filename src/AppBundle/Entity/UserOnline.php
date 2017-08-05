@@ -42,11 +42,50 @@ class UserOnline
     private $userInfo;
 
     /**
+     * @return mixed
+     */
+    public function getChannel()
+    {
+        return $this->channel;
+    }
+
+    /**
+     * @param mixed $channel
+     */
+    public function setChannel($channel)
+    {
+        $this->channel = $channel;
+    }
+
+    /**
+     * $var int
+     *
+     * @ORM\Column(name="channel", type="integer")
+     */
+    private $channel;
+
+    /**
      * @return string
      */
     public function getUserName(): string
     {
         return $this->userInfo->getUsername();
+    }
+
+    /**
+     * @return int Return user's role as text
+     */
+    public function getRole():string
+    {
+        $role = $this->userInfo->getRoles();
+        switch ($role[0]) {
+            case 'ROLE_ADMIN':
+                return 'administrator';
+            case 'ROLE_MODERATOR':
+                return 'moderator';
+            default:
+                return 'user';
+        }
     }
 
     /**

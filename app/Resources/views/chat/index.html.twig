@@ -24,7 +24,7 @@
         <div class="col-xs-5 col-md-3">
             Tu będą gracze online<br />
             {%  for user in usersOnline %}
-                {{ user.userName }}
+                <div class="{{ user.role }}">{{ user.userName }}</div>
                 <br />
             {% endfor %}
         </div>

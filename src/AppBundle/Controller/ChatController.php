@@ -17,13 +17,14 @@ class ChatController extends Controller
     public function showAction(): Response
     {
         $userId = $this->getUser()->getId();
+        $channel = $this->get('session')->get('channel');
 
         $messages = $this->get('app.Message')
                     ->getMessagesInIndex();
 
         $online = $this->get('app.OnlineUsers');
-        $usersOnline = $online->getOnlineUsers($userId);
-        $online->updateUserOnline($userId);
+        $usersOnline = $online->getOnlineUsers($userId, $channel);
+        $online->updateUserOnline($userId, $channel);
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
