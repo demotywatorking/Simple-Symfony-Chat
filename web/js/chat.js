@@ -1,4 +1,20 @@
 $(document).ready(function() {
+
+    scrollMessages();
+    setTimeout(refreshChat, 2000);
+
+    //sending new message when clicked on button
+    $('body').on('click', '#send', function(){
+        sendMessage();
+    });
+
+    //sending new message when pressed enter
+    $('body').on('keypress', '#message-text' , function( event ) {
+        if (event.which == 13 ) {
+            sendMessage();
+        }
+    });
+
     function sendMessage() {
         var text = $('#message-text').val();
         if (text === '') {
@@ -21,10 +37,11 @@ $(document).ready(function() {
                 $('#messages-box').append(
                     '<div class="message"><span class="date">('
                     + d +
-                     ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span> '
+                    ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span> '
                     + text + '</div>'
                 );
             }
+            setTimeout(scrollMessages, 100);
         });
     }
 
@@ -34,33 +51,30 @@ $(document).ready(function() {
             dataType: "json",
             url: refreshPath
         }).done(function(msg){
-            $.each( msg, function( key, val ) {
-                createNewMessage(val);
-                console.log(val);
-            });
+            if (msg.messages[0]) {
+                $.each( msg.messages, function( key, val ) {
+                    createNewMessage(val);
+                });
+                setTimeout(scrollMessages, 100);
+            }
+            if (msg.usersOnline) {
+                $('#users-box').html('');
+                $.each( msg.usersOnline, function( key, val ) {
+                    createNewUser(val);
+                });
+            }
         });
         setTimeout(refreshChat, 2000);
     }
-    setTimeout(refreshChat, 2000);
-    //sending new message when clicked on button
-    $('body').on('click', '#send', function(){
-        sendMessage();
-    });
-
-    //sending new message when pressed enter
-    $('body').on('keypress', '#message-text' , function( event ) {
-        if (event.which == 13 ) {
-            sendMessage();
-        }
-    });
 
     function createDate(dateInput)
     {
-        if (date !== undefined) {
+        if (dateInput !== undefined) {
             var d = new Date(dateInput);
         } else {
             var d = new Date();
         }
+        console.log(d);
         var date = '';
         if (d.getHours() < 10) {
             date += '0' + d.getHours() + ':';
@@ -82,12 +96,24 @@ $(document).ready(function() {
 
     function createNewMessage(val)
     {
-        var d = createDate(val.date);
+        var d = createDate(val.date.date);
         $('#messages-box').append(
             '<div class="message"><span class="date">('
             + d +
             ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span> '
             + val.text + '</div>'
+        );
+    }
+
+    function scrollMessages()
+    {
+        $('#messages-box').scrollTo('100%')
+    }
+
+    function createNewUser(val)
+    {
+        $('#users-box').append(
+            '<div class="'+ val.user_role + '">' + val.username + '</div>'
         );
     }
 });

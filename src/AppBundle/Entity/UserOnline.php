@@ -150,5 +150,14 @@ class UserOnline
     {
         $this->userInfo = $userInfo;
     }
+
+    public function createArrayToJson()
+    {
+        return [
+            'user_id' => $this->userId,
+            'username' => $this->userInfo->getUsername(),
+            'user_role' => $this->userInfo->getChatRoleAsText(),
+        ];
+    }
 }
 

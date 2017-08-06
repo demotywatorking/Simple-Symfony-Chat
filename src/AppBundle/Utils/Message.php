@@ -49,11 +49,14 @@ class Message
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
 
-    public function getMessagesFromLastId(int $lastId)
+    public function getMessagesFromLastId()
     {
+        $lastId = $this->session->get('lastId');
+
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastId($lastId, $this->config->getMessageLimit());
 
+        //if get new messages, update var lastId in session
         if (end($messages)) {
             $this->session->set('lastId', end($messages)->getId());
         }

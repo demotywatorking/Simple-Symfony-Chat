@@ -24,13 +24,10 @@ class ChatController extends Controller
                     ->getMessagesInIndex();
 
         $online = $this->get('app.OnlineUsers');
+        $online->updateUserOnline($user, $channel);
         $usersOnline = $online->getOnlineUsers($user->getId(), $channel);
 
-        try {
-            $online->updateUserOnline($user->getId(), $channel);
-        } catch (\Throwable $e) {
-            return $this->redirectToRoute('fos_user_security_logout');
-        }
+
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
@@ -64,12 +61,18 @@ class ChatController extends Controller
      */
     public function refreshAction()
     {
-        $lastId = $this->get('session')->get('lastId');
         $message = $this->get('app.Message');
+        $messages = $message->getMessagesFromLastId();
 
-        $messages = $message->getMessagesFromLastId($lastId);
+        $online = $this->get('app.OnlineUsers');
+        $online->updateUserOnline($this->getUser(), $this->get('session')->get('channel'));
+        $usersOnline = $online->getOnlineUsers($this->getUser()->getId(), $this->get('session')->get('channel'));
 
-        return new JsonResponse($messages);
+        $return = [
+            'messages' => $messages,
+            'usersOnline' => $usersOnline
+        ];
+        return new JsonResponse($return);
     }
 
     /**

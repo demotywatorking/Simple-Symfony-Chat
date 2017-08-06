@@ -46,16 +46,17 @@ class UserOnline
     /**
      * Update User's Time in Database - User will not be kicked for inactivity
      *
-     * @param $id User's Id
+     * @param $user
      */
-    public function updateUserOnline(int $id, int $channel)
+    public function updateUserOnline($user, int $channel)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
                         ->findOneBy([
-                            'userId' => $id
+                            'userId' => $user->getId()
                         ]);
         if (!$online) {
-            throw \Throwable();
+            $this->addUserOnline($user, $channel);
+            return;
         }
         $online->setOnlineTime(new \DateTime('now'));
         $online->setChannel($channel);
@@ -74,7 +75,11 @@ class UserOnline
     {
         $this->deleteInactiveUsers($id, $channel);
         $usersOnline = $this->em->getRepository('AppBundle:UserOnline')
-            ->findAll();
+            ->findAllOnlineUserExceptUser($id, $channel);
+
+        foreach ($usersOnline as &$user) {
+            $user = $user->createArrayToJson();
+        }
 
         return $usersOnline;
     }
