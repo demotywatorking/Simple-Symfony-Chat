@@ -21,7 +21,20 @@ html, body
     height:90%;
 }
 
+.text-bold {
+    font-weight: bold;
+}
 
+.date {
+    margin-right:4px;
+    font-style: italic;
+}
+
+#messages-box {
+    height:95%;
+    overflow: scroll;
+    word-wrap:break-word;
+}
 
 
 

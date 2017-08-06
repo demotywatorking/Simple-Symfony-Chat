@@ -35,7 +35,7 @@ class ChatController extends Controller
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
             'usersOnline' => $usersOnline,
-            'user' => $user
+            'user' => $user,
         ]);
     }
 
@@ -55,7 +55,21 @@ class ChatController extends Controller
         $message = $this->get('app.Message');
         $status = $message->addMessageToDatabase($user, $channel, $messageText);
 
-        return new JsonResponse($status);
+        return $this->json($status);
+    }
+    /**
+     * @Route("/chat/refresh", name="chat_refresh")
+     *
+     * @return JsonResponse
+     */
+    public function refreshAction()
+    {
+        $lastId = $this->get('session')->get('lastId');
+        $message = $this->get('app.Message');
+
+        $messages = $message->getMessagesFromLastId($lastId);
+
+        return new JsonResponse($messages);
     }
 
     /**

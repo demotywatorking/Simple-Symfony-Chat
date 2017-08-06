@@ -77,15 +77,7 @@ class UserOnline
      */
     public function getRole():string
     {
-        $role = $this->userInfo->getRoles();
-        switch ($role[0]) {
-            case 'ROLE_ADMIN':
-                return 'administrator';
-            case 'ROLE_MODERATOR':
-                return 'moderator';
-            default:
-                return 'user';
-        }
+        return $this->userInfo->getChatRoleAsText();
     }
 
     /**

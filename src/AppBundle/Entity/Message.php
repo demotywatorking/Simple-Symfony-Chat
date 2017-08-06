@@ -62,6 +62,19 @@ class Message
         return $this;
     }
 
+    public function getUsername(): string
+    {
+        return $this->userInfo->getUsername();
+    }
+
+    /**
+     * @return int Return user's role as text
+     */
+    public function getRole():string
+    {
+        return $this->userInfo->getChatRoleAsText();
+    }
+
     /**
      * Get id
      *
@@ -166,6 +179,19 @@ class Message
     public function getChannel()
     {
         return $this->channel;
+    }
+
+    public function createArrayToJson()
+    {
+        return [
+            'id' => $this->id,
+            'user_id' => $this->userId,
+            'date' => $this->date,
+            'text' => $this->text,
+            'channel' => $this->channel,
+            'username' => $this->userInfo->getUsername(),
+            'user_role' => $this->userInfo->getChatRoleAsText(),
+        ];
     }
 
 }

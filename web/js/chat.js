@@ -14,15 +14,34 @@ $(document).ready(function() {
             url: sendPath,
             data: params
         }).done(function(msg){
-            //TODO: check if message is good and show them
             if (msg === false) {
-                $('#messages-box').append('<div class="message-error">An error occurred while sending message.</div>')
+                $('#messages-box').append('<div class="message-error">An error occurred while sending message.</div>');
             } else {
-                $('#messages-box').append('<div class="message">' + text + '</div>')
+                var d = createDate();
+                $('#messages-box').append(
+                    '<div class="message"><span class="date">('
+                    + d +
+                     ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span> '
+                    + text + '</div>'
+                );
             }
         });
     }
 
+    function refreshChat()
+    {
+        $.ajax({
+            dataType: "json",
+            url: refreshPath
+        }).done(function(msg){
+            $.each( msg, function( key, val ) {
+                createNewMessage(val);
+                console.log(val);
+            });
+        });
+        setTimeout(refreshChat, 2000);
+    }
+    setTimeout(refreshChat, 2000);
     //sending new message when clicked on button
     $('body').on('click', '#send', function(){
         sendMessage();
@@ -34,4 +53,41 @@ $(document).ready(function() {
             sendMessage();
         }
     });
+
+    function createDate(dateInput)
+    {
+        if (date !== undefined) {
+            var d = new Date(dateInput);
+        } else {
+            var d = new Date();
+        }
+        var date = '';
+        if (d.getHours() < 10) {
+            date += '0' + d.getHours() + ':';
+        } else {
+            date += d.getHours() + ':';
+        }
+        if (d.getMinutes() < 10) {
+            date += '0' + d.getMinutes() + ':';
+        } else {
+            date += d.getMinutes() + ':';
+        }
+        if (d.getSeconds() < 10) {
+            date += '0' + d.getSeconds();
+        } else {
+            date += d.getSeconds();
+        }
+        return date;
+    }
+
+    function createNewMessage(val)
+    {
+        var d = createDate(val.date);
+        $('#messages-box').append(
+            '<div class="message"><span class="date">('
+            + d +
+            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span> '
+            + val.text + '</div>'
+        );
+    }
 });

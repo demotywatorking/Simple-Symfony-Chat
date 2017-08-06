@@ -24,20 +24,21 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
 
         return $this->createQueryBuilder('m')
                 ->where('m.date >= :date')
-                ->orderBy('m.date', 'ASC')
+                ->orderBy('m.date', 'DESC')
                 ->setMaxResults($limit)
                 ->setParameter('date', $date)
-                ->getQuery()->getResult();
-
+                ->getQuery()
+                ->getResult();
     }
 
     public function getMessagesFromLastId(int $lastId, int $limit)
     {
         return $this->createQueryBuilder('m')
             ->where('m.id > :id')
-            ->orderBy('m.date', 'ASC')
+            ->orderBy('m.id', 'ASC')
             ->setMaxResults($limit)
             ->setParameter('id', $lastId)
-            ->getQuery()->getResult();
+            ->getQuery()
+            ->getResult();
     }
 }

@@ -3,9 +3,10 @@
 {% block javascripts %}
     <script>
         var sendPath = '{{ url('chat_add') }}';
+        var refreshPath = '{{ url('chat_refresh') }}';
         var self = {
           'username' : '{{ user.username }}',
-        {#'role' : {{ user.getRole }}#}
+          'role' : '{{ user.getChatRoleAsText }}'
         };
     </script>
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
@@ -25,8 +26,12 @@
                     WIADOMOŚCI
                 </div>
                 <div class="panel-body" id="messages-box">
-                    {%  for message in messages %}
-                        <div>{{ message.text }}</div>
+                    {%  for message in messages|sort %}
+                        <div class="message">
+                            <span class="date">({{ message.date|date('H:i:s') }})</span>
+                            <span class="{{ message.role }} text-bold">{{ message.username }}:</span>
+                            {{ message.text }}
+                        </div>
                     {% endfor %}
                 </div>
             </div>
