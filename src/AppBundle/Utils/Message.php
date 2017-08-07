@@ -37,8 +37,10 @@ class Message
 
     public function getMessagesInIndex()
     {
+        $channel = $this->session->get('channel');
+
         $messages = $this->em->getRepository('AppBundle:Message')
-            ->getMessagesFromLastDay($this->config->getMessageLimit());
+            ->getMessagesFromLastDay($this->config->getMessageLimit(), $channel);
 
         if ($messages) {
             $this->session->set('lastId', $messages[0]->getId());
@@ -52,9 +54,10 @@ class Message
     public function getMessagesFromLastId()
     {
         $lastId = $this->session->get('lastId');
+        $channel = $this->session->get('channel');
 
         $messages = $this->em->getRepository('AppBundle:Message')
-            ->getMessagesFromLastId($lastId, $this->config->getMessageLimit());
+            ->getMessagesFromLastId($lastId, $this->config->getMessageLimit(), $channel);
 
         //if get new messages, update var lastId in session
         if (end($messages)) {
@@ -71,7 +74,7 @@ class Message
 
     public function addMessageToDatabase(User $user, int $channel, string $text):bool
     {
-        if (false === $this->validateMessage($text)) {
+        if (false === $this->validateMessage($user, $channel, $text)) {
             return false;
         }
 
@@ -95,12 +98,19 @@ class Message
 
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
+        //check if message is not priv message or something
         return $messages;
     }
 
-    private function validateMessage(string $text):bool
+    private function validateMessage(User $user, int $channel, string $text):bool
     {
-        if ('' == $text) {
+        if (!(strlen(trim($text)) > 0)) {
+            return false;
+        }
+        if ($user->getId() <= 0) {
+            return false;
+        }
+        if (!array_key_exists($channel, $this->config->getChannels())) {
             return false;
         }
         return true;

@@ -15,8 +15,8 @@ class ChatConfig
      * @var array array of channels
      */
     const CHANNELS = [
-        '1' => 'Default',
-        '2' => 'Channel 2'
+        1 => 'Default',
+        2 => 'Channel 2'
     ];
 
     /**

@@ -5,10 +5,35 @@
     <script>
         var sendPath = '{{ url('chat_add') }}';
         var refreshPath = '{{ url('chat_refresh') }}';
+        var changeChannelPath = '{{ url('change_channel_chat') }}';
         var self = {
           'username' : '{{ user.username }}',
           'role' : '{{ user.getChatRoleAsText }}'
         };
+        var emoticons = [
+            ':)',
+            ':(',
+            [
+                ':D',
+                ';D',
+                ':d',
+                ';d'
+            ],
+            [
+                ':P',
+                ':p',
+                ';p',
+                ';P'
+            ],
+            ';)',
+        ];
+        var emoticonsImg = [
+            '{{ asset('img/smile.png') }}',
+            '{{ asset('img/sad.png') }}',
+            '{{ asset('img/grin.png') }}',
+            '{{ asset('img/razz.png') }}',
+            '{{ asset('img/wink.png') }}'
+        ];
     </script>
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/jquery.scrollTo.js') }}"></script>
@@ -19,7 +44,17 @@
 
 {% block content %}
     <div class="row chat" id="chat-row-main">
-        <div class="col-xs-12" id="info-box">
+        <div class="col-xs-12 padding-bottom-small" id="info-box">
+            <select class="custom-select" id="channels">
+                {% for key,value in channels %}
+                    <option value="{{ key }}" {%  if (key == user_channel) %}selected{% endif %}>{{ value }}</option>
+                {% endfor %}
+            </select>
+
+            {% if is_granted('ROLE_ADMIN') %}
+                <a href="{{ path('chat_admin') }}">PANEL ADMINISTRATORA</a>
+            {% endif %}
+            <a href="{{ path("chat_logout") }}" class="btn btn-info">WYLOGUJ SIĘ</a>
         </div>
 
         <div class="col-xs-7 col-md-9" id="messages">
@@ -32,7 +67,9 @@
                         <div class="message">
                             <span class="date">({{ message.date|date('H:i:s') }})</span>
                             <span class="{{ message.role }} text-bold">{{ message.username }}:</span>
-                            {{ message.text }}
+                            <span class="message-text">
+                                {{ message.text }}
+                            </span>
                         </div>
                     {% endfor %}
                 </div>
@@ -53,9 +90,15 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-12">
-            <input type="text" class="form-control" id="message-text">
-            <button class="btn btn-success" id="send">Wyślij</button>
+        <div class="col-xs-12 margin-top-minus">
+            <div class="row">
+                <div class="col-xs-11">
+                    <input type="text" class="form-control" id="message-text">
+                </div>
+                <div class="col-xs-1">
+                    <button class="btn btn-success btn-block" id="send">Wyślij</button>
+                </div>
+            </div>
         </div>
     </div>
 

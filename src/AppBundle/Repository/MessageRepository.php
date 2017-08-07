@@ -17,28 +17,32 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
      *
      * @return array array of Messages Entity
      */
-    public function getMessagesFromLastDay(int $limit)
+    public function getMessagesFromLastDay(int $limit, int $channel)
     {
         $date = new \DateTime('now');
         $date->modify( '-1 day' );
 
         return $this->createQueryBuilder('m')
                 ->where('m.date >= :date')
+                ->andWhere('m.channel = :channel')
                 ->orderBy('m.date', 'DESC')
-                ->setMaxResults($limit)
                 ->setParameter('date', $date)
+                ->setParameter('channel', $channel)
+                ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
     }
 
-    public function getMessagesFromLastId(int $lastId, int $limit)
+    public function getMessagesFromLastId(int $lastId, int $limit, int $channel)
     {
         return $this->createQueryBuilder('m')
-            ->where('m.id > :id')
-            ->orderBy('m.id', 'ASC')
-            ->setMaxResults($limit)
-            ->setParameter('id', $lastId)
-            ->getQuery()
-            ->getResult();
+                ->where('m.id > :id')
+                ->andWhere('m.channel = :channel')
+                ->orderBy('m.id', 'ASC')
+                ->setParameter('id', $lastId)
+                ->setParameter('channel', $channel)
+                ->setMaxResults($limit)
+                ->getQuery()
+                ->getResult();
     }
 }

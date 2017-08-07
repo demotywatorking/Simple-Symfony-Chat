@@ -5,6 +5,7 @@ namespace AppBundle\Controller;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -27,12 +28,14 @@ class ChatController extends Controller
         $online->updateUserOnline($user, $channel);
         $usersOnline = $online->getOnlineUsers($user->getId(), $channel);
 
-
+        $channels = $this->get('app.ChatConfig')->getChannels();
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
             'usersOnline' => $usersOnline,
             'user' => $user,
+            'user_channel' => $channel,
+            'channels' => $channels
         ]);
     }
 
@@ -80,11 +83,36 @@ class ChatController extends Controller
      *
      * @Route("/chat/logout", name="chat_logout")
      */
-    public function logoutAction()
+    public function logoutAction(): RedirectResponse
     {
         $online = $this->get('app.OnlineUsers');
         $online->deleteUserWhenLogout($this->getUser()->getId());
 
         return $this->redirectToRoute('fos_user_security_logout');
+    }
+
+    /**
+     * @Route("/chat/channel", name="change_channel_chat")
+     *
+     * @param int $channel
+     */
+    public function changeChannelAction(Request $request): JsonResponse
+    {
+        $channelService = $this->get('app.Channel');
+        $channel = $request->get('channel');
+        if (!$channel) {
+            return $this->json('false');
+        }
+        $return = $channelService->changeChannelOnChat($this->getUser(), $channel);
+
+        return $this->json($return);
+    }
+
+    /**
+     * @Route("/chat/admin/", name="chat_admin")
+     */
+    public function adminAction()
+    {
+        return new Response('witaj adminie :)');
     }
 }

@@ -25,8 +25,7 @@ class UserOnline
     {
         if ( $this->em->getRepository('AppBundle:UserOnline')
             ->findOneBy([
-                'userId' => $user->getId(),
-                'channel' => $channel
+                'userId' => $user->getId()
             ])
         ) {
             return;

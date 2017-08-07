@@ -1,5 +1,6 @@
-$(document).ready(function() {
-
+$(document).ready(function()
+{
+    parseMessagesOnStart();
     scrollMessages();
     setTimeout(refreshChat, 2000);
 
@@ -13,6 +14,10 @@ $(document).ready(function() {
         if (event.which == 13 ) {
             sendMessage();
         }
+    });
+
+    $('body').on('change', '#channels', function(){
+        changeChannel($(this).val());
     });
 
     function sendMessage() {
@@ -38,7 +43,7 @@ $(document).ready(function() {
                     '<div class="message"><span class="date">('
                     + d +
                     ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span> '
-                    + text + '</div>'
+                    + parseMessage(text) + '</div>'
                 );
             }
             setTimeout(scrollMessages, 100);
@@ -74,7 +79,6 @@ $(document).ready(function() {
         } else {
             var d = new Date();
         }
-        console.log(d);
         var date = '';
         if (d.getHours() < 10) {
             date += '0' + d.getHours() + ':';
@@ -100,8 +104,8 @@ $(document).ready(function() {
         $('#messages-box').append(
             '<div class="message"><span class="date">('
             + d +
-            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span> '
-            + val.text + '</div>'
+            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span><span class="message-text">'
+            + parseMessage(val.text) + '</span></div>'
         );
     }
 
@@ -115,5 +119,53 @@ $(document).ready(function() {
         $('#users-box').append(
             '<div class="'+ val.user_role + '">' + val.username + '</div>'
         );
+    }
+
+    function changeChannel(channelId)
+    {
+        $.ajax({
+            type: "POST",
+            dataType: "json",
+            url: changeChannelPath,
+            data: {'channel' : channelId }
+        }).done(function(msg){
+            if (msg == true) {
+                clearChat();
+            }
+        });
+    }
+
+    function clearChat()
+    {
+        $('#users-box').empty();
+        $('#messages-box').empty();
+    }
+
+    function parseMessagesOnStart()
+    {
+        var message = '';
+        $('div.message').each(function(){
+            message = $(this).children('span.message-text').text();
+            $(this).children('span.message-text').html(parseMessage(message))
+        });
+    }
+
+    function parseMessage(message)
+    {
+        for (i = 0; i < emoticons.length; i++) {
+            if(Array.isArray(emoticons[i]) ) {
+                for(j = 0 ; j < emoticons[i].length ; j++) {
+                    if (message.includes(emoticons[i][j])) {
+                        message = message.replace(emoticons[i][j], '<img src="' + emoticonsImg[i] + '" alt="' + emoticons[i][j] + '"/>');
+                    }
+                }
+            } else {
+                if (message.includes(emoticons[i])) {
+                    message = message.replace(emoticons[i], '<img src="' + emoticonsImg[i] + '" alt="' + emoticons[i] + '"/>');
+                }
+            }
+
+        }
+        return message;
     }
 });

@@ -40,3 +40,8 @@ services:
     app.ChatConfig:
         public: true
         class: AppBundle\Utils\ChatConfig
+
+    app.Channel:
+        public: true
+        class: AppBundle\Utils\Channel
+        arguments: ['@app.ChatConfig', '@session', '@app.OnlineUsers']
