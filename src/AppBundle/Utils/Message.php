@@ -45,7 +45,11 @@ class Message
         if ($messages) {
             $this->session->set('lastId', $messages[0]->getId());
         } else {
-            $this->session->set('lastId', 0);
+            $this->session->set(
+                'lastId',
+                $this->em->getRepository('AppBundle:Message')
+                ->getIdFromLastMessage()
+            );
         }
 
         return  $this->checkIfMessagesCanBeDisplayed($messages);
@@ -55,6 +59,11 @@ class Message
     {
         $lastId = $this->session->get('lastId');
         $channel = $this->session->get('channel');
+        //only when channel was changed
+        if($this->session->get('changedChannel')) {
+            $this->session->remove('changedChannel');
+            return $this->getMessagesAfterChangingChannel($channel);
+        }
 
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastId($lastId, $this->config->getMessageLimit(), $channel);
@@ -65,17 +74,30 @@ class Message
         }
 
         $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
-        foreach ($messagesSerialized as &$message) {
-            $message = $message->createArrayToJson();
-        }
+        $this->serializeMessages($messagesSerialized);
 
         return $messagesSerialized;
     }
 
-    public function addMessageToDatabase(User $user, int $channel, string $text):bool
+    private function getMessagesAfterChangingChannel(int $channel)
+    {
+        $messages = $this->em->getRepository('AppBundle:Message')
+            ->getMessagesFromLastIdAfterChangingChannel($this->config->getMessageLimit(), $channel);
+
+        $lastId = $this->em->getRepository('AppBundle:Message')
+            ->getIdFromLastMessage();
+        $this->session->set('lastId', $lastId);
+
+        $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
+        $this->serializeMessages($messagesSerialized);
+
+        return  $messagesSerialized;
+    }
+
+    public function addMessageToDatabase(User $user, int $channel, string $text):array
     {
         if (false === $this->validateMessage($user, $channel, $text)) {
-            return false;
+            return ['status' => 'false'];
         }
 
         $message = new \AppBundle\Entity\Message();
@@ -89,11 +111,23 @@ class Message
             $this->em->persist($message);
             $this->em->flush();
         } catch(\Throwable $e) {
-            return false;
+            return ['status' => 'false'];
+        }
+        //check if there was new messages between last message and send message
+        if (($this->session->get('lastId') + 1) != $message->getId()) {
+            $messages = $this->em->getRepository('AppBundle:Message')
+                ->getMessagesBetweenIds(
+                    $this->session->get('lastId'),
+                    $message->getId(),
+                    $channel
+                );
+            $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
+            $this->serializeMessages($messagesSerialized);
         }
 
         $this->session->set('lastId', $message->getId());
-        return true;
+
+        return ['status' => 'true', 'messages' => $messagesSerialized ?? ''];
     }
 
     private function checkIfMessagesCanBeDisplayed(array $messages)
@@ -114,5 +148,12 @@ class Message
             return false;
         }
         return true;
+    }
+
+    private function serializeMessages(&$messagesSerialized)
+    {
+        foreach ($messagesSerialized as &$message) {
+            $message = $message->createArrayToJson();
+        }
     }
 }

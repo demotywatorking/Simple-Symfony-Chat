@@ -35,6 +35,7 @@ html, body
     overflow: scroll;
     word-wrap:break-word;
 }
+
 .custom-select {
     display: inline-block;
     max-width: 100%;
@@ -52,15 +53,35 @@ html, body
     -moz-appearance: none;
     -webkit-appearance: none;
 }
+
 .padding-bottom-small {
     padding-bottom:5px;
 }
+
 .margin-top-minus {
     margin-top: -20px;
 }
 
+.hidden-div {
+    background: linear-gradient(to bottom, #6DB3F2 0%, #54A3EE 45%, #3690F0 50%, #1E69DE 100%) repeat scroll 0% 0% ;
+    border: 1px solid #423c2c;
+    border-radius: 5px;
+    color: white;
+    display: none;
+    position: absolute;
+    z-index: 1000;
+    opacity:0.9;
+    box-sizing: border-box;
+    padding: 5px;
+}
 
+.kursor {
+    cursor: pointer;
+}
 
+#emoticons {
+    position: relative;
+}
 
 
 .message-error {
@@ -79,5 +100,5 @@ html, body
 }
 
 .user {
-    color: brown;
+    color: blue;
 }

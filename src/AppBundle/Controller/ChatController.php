@@ -107,12 +107,4 @@ class ChatController extends Controller
 
         return $this->json($return);
     }
-
-    /**
-     * @Route("/chat/admin/", name="chat_admin")
-     */
-    public function adminAction()
-    {
-        return new Response('witaj adminie :)');
-    }
 }

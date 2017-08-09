@@ -26,14 +26,17 @@
                 ';P'
             ],
             ';)',
+            ':o)',
         ];
         var emoticonsImg = [
             '{{ asset('img/smile.png') }}',
             '{{ asset('img/sad.png') }}',
             '{{ asset('img/grin.png') }}',
             '{{ asset('img/razz.png') }}',
-            '{{ asset('img/wink.png') }}'
+            '{{ asset('img/wink.png') }}',
+            '{{ asset('img/monkey.png') }}',
         ];
+        var newMessageSound = '{{ asset('sound/message.mp3') }}';
     </script>
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/jquery.scrollTo.js') }}"></script>
@@ -52,7 +55,7 @@
             </select>
 
             {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('chat_admin') }}">PANEL ADMINISTRATORA</a>
+                <a href="{{ path('chat_admin') }}" target="_blank">PANEL ADMINISTRATORA</a>
             {% endif %}
             <a href="{{ path("chat_logout") }}" class="btn btn-info">WYLOGUJ SIĘ</a>
         </div>
@@ -92,6 +95,10 @@
         </div>
         <div class="col-xs-12 margin-top-minus">
             <div class="row">
+                <div class="col-xs-12">
+                    <button class="btn btn-success" id="emoticons">Emoticons</button>
+                    <div class="hidden-div" name="emoticons"></div>
+                </div>
                 <div class="col-xs-11">
                     <input type="text" class="form-control" id="message-text">
                 </div>

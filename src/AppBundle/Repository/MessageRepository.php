@@ -45,4 +45,47 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
                 ->getQuery()
                 ->getResult();
     }
+
+    public function getMessagesFromLastIdAfterChangingChannel(int $limit, int $channel)
+    {
+        $date = new \DateTime('now');
+        $date->modify( '-1 day' );
+
+        return $this->createQueryBuilder('m')
+            ->andWhere('m.date >= :date')
+            ->andWhere('m.channel = :channel')
+            ->orderBy('m.id', 'ASC')
+            ->setParameter('channel', $channel)
+            ->setParameter('date', $date)
+            ->setMaxResults($limit)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getMessagesBetweenIds(int $idFirst, int $idSecond, int $channel)
+    {
+        return $this->createQueryBuilder('m')
+            ->where('m.id BETWEEN :id1 AND :id2')
+            ->andWhere('m.channel = :channel')
+            ->orderBy('m.id', 'ASC')
+            ->setParameter('id1', $idFirst)
+            ->setParameter('id2', $idSecond)
+            ->setParameter('channel', $channel)
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getIdFromLastMessage()
+    {
+        $message =  $this->createQueryBuilder('m')
+            ->orderBy('m.id', 'DESC')
+            ->setMaxResults(1)
+            ->getQuery()
+            ->getResult();
+        if ($message) {
+            return $message[0]->getId();
+        } else {
+            return 0;
+        }
+    }
 }

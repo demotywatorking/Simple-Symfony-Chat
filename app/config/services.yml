@@ -45,3 +45,8 @@ services:
         public: true
         class: AppBundle\Utils\Channel
         arguments: ['@app.ChatConfig', '@session', '@app.OnlineUsers']
+
+    app.AdminPanel:
+        public: true
+        class: AppBundle\Utils\AdminPanel
+        arguments: ['@doctrine.orm.entity_manager']

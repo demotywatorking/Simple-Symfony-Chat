@@ -48,4 +48,32 @@ class User extends BaseUser
         }
 
     }
+
+    /**
+     * In this chat you do not need to have more roles than 1
+     *
+     * @param string $role
+     * @return $this
+     */
+    public function changeRole($role)
+    {
+        switch ($role) {
+            case 'user':
+                $this->removeRole('ROLE_ADMIN');
+                $this->removeRole('ROLE_MODERATOR');
+                break;
+            case 'moderator':
+                $this->removeRole('ROLE_ADMIN');
+                $this->removeRole('ROLE_USER');
+                $this->addRole('ROLE_MODERATOR');
+                break;
+            case 'administrator':
+                $this->removeRole('ROLE_MODERATOR');
+                $this->removeRole('ROLE_USER');
+                $this->addRole('ROLE_ADMIN');
+                break;
+        }
+
+        return $this;
+    }
 }
