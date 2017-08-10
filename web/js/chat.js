@@ -18,7 +18,8 @@ $(document).ready(function()
 
     //sending new message when pressed enter
     $('body').on('keypress', '#message-text' , function( event ) {
-        if (event.which == 13 ) {
+        if (event.which == 13 && !event.shiftKey) {
+            event.preventDefault();
             sendMessage();
         }
     });
@@ -42,7 +43,8 @@ $(document).ready(function()
         emoticonsOpened++;
     });
 
-    function sendMessage() {
+    function sendMessage()
+    {
         var text = $('#message-text').val();
         if (text === '') {
             return;
@@ -50,7 +52,8 @@ $(document).ready(function()
         var params = {
             'text' : text
         };
-        $('#message-text').val('');
+        $('#message-text').val("");
+        $('#message-text').focus();
         $.ajax({
             type: "POST",
             dataType: "json",
@@ -61,11 +64,15 @@ $(document).ready(function()
                 $('#messages-box').append('<div class="message-error">An error occurred while sending message.</div>');
             } else {
                 var d = createDate();
+                var del = '';
+                if (self.role === 'administrator' || self.role === 'moderator') {
+                    del = '<span class="pull-right kursor" data-id="' + msg.id + '">&times;</span>';
+                }
                 $('#messages-box').append(
-                    '<div class="message"><span class="date">('
+                    '<div class="message" data-id="' + msg.id + '"><span class="date">('
                     + d +
-                    ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span> '
-                    + parseMessage(text) + '</div>'
+                    ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span><span class="message-text"> '
+                    + parseMessage(text) + '</span>' + del + '</div>'
                 );
             }
             if (msg.messages) {
@@ -85,13 +92,17 @@ $(document).ready(function()
         }).done(function(msg){
             if (msg.messages[0]) {
                 $.each( msg.messages, function( key, val ) {
-                    createNewMessage(val);
+                    if(val.text == 'delete') {
+                        $('div[data-id="' + val.id + '"]').remove();
+                    } else {
+                        createNewMessage(val);
+                        if (channelChanged === 0) {
+                            var audio = new Audio(newMessageSound);
+                            audio.currentTime = 0;
+                            audio.play();
+                        }
+                    }
                 });
-                if (channelChanged === 0) {
-                    var audio = new Audio(newMessageSound);
-                    audio.currentTime = 0;
-                    audio.play();
-                }
                 setTimeout(scrollMessages, 100);
             }
             if (msg.usersOnline) {
@@ -136,11 +147,16 @@ $(document).ready(function()
     function createNewMessage(val)
     {
         var d = createDate(val.date.date);
+        var del = '';
+        if (self.role === 'administrator' || self.role === 'moderator') {
+            del = '<span class="pull-right kursor" data-id="' + val.id + '">&times;</span>';
+        }
         $('#messages-box').append(
-            '<div class="message"><span class="date">('
+
+            '<div class="message" data-id="' + val.id + '"><span class="date">('
             + d +
-            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span><span class="message-text">'
-            + parseMessage(val.text) + '</span></div>'
+            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span><span class="message-text"> '
+            + parseMessage(val.text) + '</span>' + del + '</div>'
         );
     }
 
@@ -181,8 +197,8 @@ $(document).ready(function()
     {
         var message = '';
         $('div.message').each(function(){
-            message = $(this).children('span.message-text').text();
-            $(this).children('span.message-text').html(parseMessage(message))
+            message = $(this).children('span.message-text').html();
+            $(this).children('span.message-text').html(parseMessage(message));
         });
         for(i = 0 ; i < emoticonsImg.length ; i++) {
             $('div[name="emoticons"]').append(function(){
@@ -197,6 +213,11 @@ $(document).ready(function()
     }
 
     function parseMessage(message)
+    {
+        return parseLinks(parseEmoticons(message));
+    }
+
+    function parseEmoticons(message)
     {
         for (i = 0; i < emoticons.length; i++) {
             if(Array.isArray(emoticons[i]) ) {
@@ -214,11 +235,28 @@ $(document).ready(function()
         return message;
     }
 
+    //https://stackoverflow.com/a/3890175/6912075
+    function parseLinks(inputText)
+    {
+        var replacedText, replacePattern1, replacePattern2, replacePattern3;
+
+        //URLs starting with http://, https://, or ftp://
+        replacePattern1 = /(\b(https?|ftp):\/\/[-A-Z0-9+&@#\/%?=~_|!:,.;]*[-A-Z0-9+&@#\/%=~_|])/gim;
+        replacedText = inputText.replace(replacePattern1, '<a href="$1" target="_blank">$1</a>');
+
+        //URLs starting with "www." (without // before it, or it'd re-link the ones done above).
+        replacePattern2 = /(^|[^\/])(www\.[\S]+(\b|$))/gim;
+        replacedText = replacedText.replace(replacePattern2, '$1<a href="http://$2" target="_blank">$2</a>');
+
+        //Change email addresses to mailto:: links.
+        //replacePattern3 = /(([a-zA-Z0-9\-\_\.])+@[a-zA-Z\_]+?(\.[a-zA-Z]{2,6})+)/gim;
+        //replacedText = replacedText.replace(replacePattern3, '<a href="mailto:$1">$1</a>');
+
+        return replacedText;
+    }
+
     function show(id)
     {
-        //x = (w_width / 2) - 250;
-        //y = 300;
-
         $('div[name="'+id+'"]').css({  top: -35, left: 0 });
         $('div[name="'+id+'"]').fadeIn();
         //$('div[name="'+id+'"]').draggable();

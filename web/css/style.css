@@ -17,8 +17,13 @@ html, body
     min-height:100%;
 }
 
-#messages, #online-users, #panel-messages, #panel-users {
-    height:90%;
+#messages, #online-users {
+    height: 85%;
+    margin: 0 !important;
+}
+
+#panel-messages, #panel-users {
+    height: 95%;
 }
 
 .text-bold {

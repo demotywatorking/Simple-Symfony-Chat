@@ -51,6 +51,7 @@ class Message
                 ->getIdFromLastMessage()
             );
         }
+        $this->serializeMessages($messages);
 
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
@@ -72,9 +73,9 @@ class Message
         if (end($messages)) {
             $this->session->set('lastId', end($messages)->getId());
         }
+        $this->serializeMessages($messages);
 
         $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
-        $this->serializeMessages($messagesSerialized);
 
         return $messagesSerialized;
     }
@@ -113,6 +114,7 @@ class Message
         } catch(\Throwable $e) {
             return ['status' => 'false'];
         }
+        $id = $message->getId();
         //check if there was new messages between last message and send message
         if (($this->session->get('lastId') + 1) != $message->getId()) {
             $messages = $this->em->getRepository('AppBundle:Message')
@@ -127,11 +129,39 @@ class Message
 
         $this->session->set('lastId', $message->getId());
 
-        return ['status' => 'true', 'messages' => $messagesSerialized ?? ''];
+        return [
+            'id' => $id,
+            'status' => 'true',
+            'messages' => $messagesSerialized ?? ''
+        ];
+    }
+
+    public function deleteMessage(int $id, int $channel, User $user)
+    {
+        $status =  $this->em->getRepository('AppBundle:Message')
+                        ->deleteMessage($id);
+
+        $message = new \AppBundle\Entity\Message();
+        $message->setUserInfo($user);
+        $message->setChannel($channel);
+        $message->setText('/delete '.$id);
+        $message->setDate(new \DateTime());
+        $this->em->getRepository('AppBundle:Message');
+
+        $this->em->persist($message);
+        $this->em->flush();
+
+        return $status;
     }
 
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
+        for ($i = 0 ; $i < count($messages) ; $i++) {
+            $textSplitted = explode(' ', $messages[$i]['text']);
+            if ($textSplitted[0] == '/delete') {
+                unset($messages[$i]);
+            }
+        }
         //check if message is not priv message or something
         return $messages;
     }

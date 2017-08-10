@@ -25,9 +25,11 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
         return $this->createQueryBuilder('m')
                 ->where('m.date >= :date')
                 ->andWhere('m.channel = :channel')
+                ->andWhere('m.text NOT LIKE :text')
                 ->orderBy('m.date', 'DESC')
                 ->setParameter('date', $date)
                 ->setParameter('channel', $channel)
+                ->setParameter('text', '/delete%')
                 ->setMaxResults($limit)
                 ->getQuery()
                 ->getResult();
@@ -88,4 +90,15 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
             return 0;
         }
     }
+
+    public function deleteMessage($id)
+    {
+        return $this->createQueryBuilder('m')
+            ->delete()
+            ->where('m.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getResult();
+    }
+
 }

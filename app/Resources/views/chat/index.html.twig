@@ -40,6 +40,12 @@
     </script>
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/jquery.scrollTo.js') }}"></script>
+    {% if is_granted('ROLE_MODERATOR') %}
+        <script>
+            var deletePath = '{{ url('chat_delete') }}';
+        </script>
+        <script type="text/javascript" src="{{ asset('js/delete.js') }}"></script>
+    {% endif %}
 {% endblock %}
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('css/style.css') }}">
@@ -67,12 +73,15 @@
                 </div>
                 <div class="panel-body" id="messages-box">
                     {%  for message in messages|sort %}
-                        <div class="message">
+                        <div class="message" data-id="{{ message.id }}">
                             <span class="date">({{ message.date|date('H:i:s') }})</span>
-                            <span class="{{ message.role }} text-bold">{{ message.username }}:</span>
+                            <span class="{{ message.user_role }} text-bold">{{ message.username }}:</span>
                             <span class="message-text">
                                 {{ message.text }}
                             </span>
+                            {% if is_granted('ROLE_MODERATOR') %}
+                            <span class="pull-right kursor" data-id="{{ message.id }}">&times;</span>
+                            {% endif %}
                         </div>
                     {% endfor %}
                 </div>
@@ -100,7 +109,7 @@
                     <div class="hidden-div" name="emoticons"></div>
                 </div>
                 <div class="col-xs-11">
-                    <input type="text" class="form-control" id="message-text">
+                    <textarea class="form-control" id="message-text" cols="50" rows="1"></textarea>
                 </div>
                 <div class="col-xs-1">
                     <button class="btn btn-success btn-block" id="send">Wyślij</button>

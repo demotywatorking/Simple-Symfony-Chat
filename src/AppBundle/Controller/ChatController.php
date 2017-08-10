@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
+use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -76,6 +77,24 @@ class ChatController extends Controller
             'usersOnline' => $usersOnline
         ];
         return new JsonResponse($return);
+    }
+
+    /**
+     * @Route("/chat/delete", name="chat_delete")
+     * @Security("has_role('ROLE_MODERATOR')")
+     */
+    public function deleteAction(Request $request)
+    {
+        $id = $request->get('messageId');
+        $channel = $this->get('session')->get('channel');
+        $user = $this->getUser();
+        if (!$id) {
+            return $this->json(['status' => 0]);
+        }
+
+        $status = $this->get('app.Message')->deleteMessage($id, $channel, $user);
+
+        return $this->json(['status' => $status]);
     }
 
     /**
