@@ -27,26 +27,26 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
-    app.Message:
+    chat.Message:
         public: true
         class: AppBundle\Utils\Message
-        arguments: ['@doctrine.orm.entity_manager', '@session', '@app.ChatConfig']
+        arguments: ['@doctrine.orm.entity_manager', '@session', '@chat.ChatConfig']
 
-    app.OnlineUsers:
+    chat.OnlineUsers:
         public: true
         class: AppBundle\Utils\UserOnline
-        arguments: ['@doctrine.orm.entity_manager', '@app.ChatConfig']
+        arguments: ['@doctrine.orm.entity_manager', '@chat.ChatConfig']
 
-    app.ChatConfig:
+    chat.ChatConfig:
         public: true
         class: AppBundle\Utils\ChatConfig
 
-    app.Channel:
+    chat.Channel:
         public: true
         class: AppBundle\Utils\Channel
-        arguments: ['@app.ChatConfig', '@session', '@app.OnlineUsers']
+        arguments: ['@chat.ChatConfig', '@session', '@chat.OnlineUsers']
 
-    app.AdminPanel:
+    chat.AdminPanel:
         public: true
         class: AppBundle\Utils\AdminPanel
         arguments: ['@doctrine.orm.entity_manager']

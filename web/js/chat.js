@@ -28,6 +28,10 @@ $(document).ready(function()
         changeChannel($(this).val());
     });
 
+    $('body').on('change', '#locale', function(){
+        changeLocale($(this).val());
+    });
+
     $('.emoticon-img').click(function(){
         var value = $('#message-text').val();
         var emoticon = $(this).attr('alt');
@@ -265,5 +269,10 @@ $(document).ready(function()
     function hide(id)
     {
         $('div[name="'+id+'"]').fadeOut();
+    }
+
+    function changeLocale(locale)
+    {
+        window.location = languagePath[locale];
     }
 });

@@ -1,14 +1,18 @@
 {% extends '::base.html.twig' %}
+{% trans_default_domain 'chat' %}
 
 {% block javascripts %}
-
     <script>
         var sendPath = '{{ url('chat_add') }}';
         var refreshPath = '{{ url('chat_refresh') }}';
         var changeChannelPath = '{{ url('change_channel_chat') }}';
+        var languagePath = {
+          'pl' : '{{ url("homepage", {"_locale" : "pl"}) }}',
+          'en' : '{{ url("homepage", {"_locale" : "en"}) }}'
+        };
         var self = {
           'username' : '{{ user.username }}',
-          'role' : '{{ user.getChatRoleAsText }}'
+          'role' : '{{ user.getChatRoleAsText }}',
         };
         var emoticons = [
             ':)',
@@ -38,6 +42,9 @@
         ];
         var newMessageSound = '{{ asset('sound/message.mp3') }}';
     </script>
+    {#language script#}
+    <script type="text/javascript" src="{{ asset('js/' ~ locale ~ '.js') }}"></script>
+    {#chat script#}
     <script type="text/javascript" src="{{ asset('js/chat.js') }}"></script>
     <script type="text/javascript" src="{{ asset('js/jquery.scrollTo.js') }}"></script>
     {% if is_granted('ROLE_MODERATOR') %}
@@ -56,20 +63,23 @@
         <div class="col-xs-12 padding-bottom-small" id="info-box">
             <select class="custom-select" id="channels">
                 {% for key,value in channels %}
-                    <option value="{{ key }}" {%  if (key == user_channel) %}selected{% endif %}>{{ value }}</option>
+                    <option value="{{ key }}" {%  if (key == user_channel) %}selected{% endif %}>{{ ('channel.' ~ value)|trans }}</option>
                 {% endfor %}
             </select>
-
+            <select class="custom-select" id="locale">
+                <option value="pl" {%  if (locale == 'pl') %}selected{% endif %}>PL</option>
+                <option value="en" {%  if (locale == 'en') %}selected{% endif %}>EN</option>
+            </select>
             {% if is_granted('ROLE_ADMIN') %}
-                <a href="{{ path('chat_admin') }}" target="_blank">PANEL ADMINISTRATORA</a>
+                <a href="{{ path('chat_admin') }}" target="_blank">{{ 'panel'|trans }}</a>
             {% endif %}
-            <a href="{{ path("chat_logout") }}" class="btn btn-info">WYLOGUJ SIĘ</a>
+            <a href="{{ path("chat_logout") }}" class="btn btn-info">{{ 'logout'|trans }}</a>
         </div>
 
         <div class="col-xs-7 col-md-9" id="messages">
             <div class="panel panel-success" id="panel-messages">
                 <div class="panel-heading text-center">
-                    WIADOMOŚCI
+                    {{ 'messages'|trans }}
                 </div>
                 <div class="panel-body" id="messages-box">
                     {%  for message in messages|sort %}
@@ -90,7 +100,7 @@
         <div class="col-xs-5 col-md-3" id="online-users">
             <div class="panel panel-success" id="panel-users">
                 <div class="panel-heading text-center">
-                    UŻYTKOWNICY ONLINE
+                    {{ 'online'|trans }}
                 </div>
                 <div class="panel-body" >
                     <div class="{{ user.getChatRoleAsText }}" id="username">{{ user.username }}</div>
@@ -105,14 +115,14 @@
         <div class="col-xs-12 margin-top-minus">
             <div class="row">
                 <div class="col-xs-12">
-                    <button class="btn btn-success" id="emoticons">Emoticons</button>
+                    <button class="btn btn-success" id="emoticons">{{ 'emoticons'|trans }}</button>
                     <div class="hidden-div" name="emoticons"></div>
                 </div>
                 <div class="col-xs-11">
                     <textarea class="form-control" id="message-text" cols="50" rows="1"></textarea>
                 </div>
                 <div class="col-xs-1">
-                    <button class="btn btn-success btn-block" id="send">Wyślij</button>
+                    <button class="btn btn-success btn-block" id="send">{{ 'send'|trans }}</button>
                 </div>
             </div>
         </div>

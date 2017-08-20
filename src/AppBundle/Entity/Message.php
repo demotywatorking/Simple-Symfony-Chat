@@ -55,13 +55,25 @@ class Message
      */
     private $userInfo;
 
-    public function setUserInfo($userInfo)
+    /**
+     * Adds User to relation
+     *
+     * @param User $userInfo User instance
+     *
+     * @return $this
+     */
+    public function setUserInfo(User $userInfo)
     {
         $this->userInfo = $userInfo;
 
         return $this;
     }
 
+    /**
+     * Gets User's username from relation
+     *
+     * @return string Username
+     */
     public function getUsername(): string
     {
         return $this->userInfo->getUsername();
@@ -181,6 +193,11 @@ class Message
         return $this->channel;
     }
 
+    /**
+     * Change User Entity to array
+     *
+     * @return array array of user's entity changed to array
+     */
     public function createArrayToJson()
     {
         $textSplitted = explode(' ', $this->text);

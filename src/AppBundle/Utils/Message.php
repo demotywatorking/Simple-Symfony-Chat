@@ -6,6 +6,12 @@ use AppBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+/**
+ * Service to preparing messages from database to array or check if new message can be add to database
+ *
+ * Class Message
+ * @package AppBundle\Utils
+ */
 class Message
 {
     /**
@@ -35,6 +41,12 @@ class Message
         $this->config = $config;
     }
 
+    /**
+     * Gets messages from last 24h limited by chat limit, than set id of last message to session
+     * than change messages from entitys to array
+     *
+     * @return array Array of messages changed to array
+     */
     public function getMessagesInIndex()
     {
         $channel = $this->session->get('channel');
@@ -51,11 +63,17 @@ class Message
                 ->getIdFromLastMessage()
             );
         }
-        $this->serializeMessages($messages);
+        $this->changeMessagesToArray($messages);
 
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
 
+    /**
+     * Gets messages from database from last id read from session, then set id of last message to session if any message exists,
+     * than change messages from entitys to array and checking if messages can be displayed
+     *
+     * @return array Array of messages changed to array
+     */
     public function getMessagesFromLastId()
     {
         $lastId = $this->session->get('lastId');
@@ -73,13 +91,22 @@ class Message
         if (end($messages)) {
             $this->session->set('lastId', end($messages)->getId());
         }
-        $this->serializeMessages($messages);
+        $this->changeMessagesToArray($messages);
 
-        $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
+        $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
 
-        return $messagesSerialized;
+        return $messagesToDisplay;
     }
 
+
+    /**
+     * Gets messages from last 24h from new channel, then set id of last message to session if any message exists,
+     * than change messages from entitys to array and checking if messages can be displayed
+     *
+     * @param int $channel Channel's Id
+     *
+     * @return array Array of messages changed to array
+     */
     private function getMessagesAfterChangingChannel(int $channel)
     {
         $messages = $this->em->getRepository('AppBundle:Message')
@@ -89,14 +116,25 @@ class Message
             ->getIdFromLastMessage();
         $this->session->set('lastId', $lastId);
 
-        $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
-        $this->serializeMessages($messagesSerialized);
+        $this->changeMessagesToArray($messages);
+        $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
 
-        return  $messagesSerialized;
+        return  $messagesToDisplay;
     }
 
-    public function addMessageToDatabase(User $user, int $channel, string $text):array
+    /**
+     * Validates messages and adds message to database, checks if there are new messages from last refresh,
+     * save sent message's id to session as lastid
+     *
+     * @param User $user User instance, who is sending message
+     *
+     * @param string $text Message's text
+     *
+     * @return array status of adding messages, and new messages from last refresh
+     */
+    public function addMessageToDatabase(User $user, string $text):array
     {
+        $channel = $this->session->get('channel');
         if (false === $this->validateMessage($user, $channel, $text)) {
             return ['status' => 'false'];
         }
@@ -122,9 +160,9 @@ class Message
                     $this->session->get('lastId'),
                     $message->getId(),
                     $channel
-                );
-            $messagesSerialized = $this->checkIfMessagesCanBeDisplayed($messages);
-            $this->serializeMessages($messagesSerialized);
+            );
+            $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
+            $this->changeMessagesToArray($messagesToDisplay);
         }
 
         $this->session->set('lastId', $message->getId());
@@ -132,12 +170,22 @@ class Message
         return [
             'id' => $id,
             'status' => 'true',
-            'messages' => $messagesSerialized ?? ''
+            'messages' => $messagesToDisplay ?? ''
         ];
     }
 
-    public function deleteMessage(int $id, int $channel, User $user)
+    /**
+     * Deleting message from database
+     *
+     * @param int $id Message's id
+     *
+     * @param User $user User instance
+     *
+     * @return array status of deleting messages
+     */
+    public function deleteMessage(int $id, User $user)
     {
+        $channel = $this->session->get('channel');
         $status =  $this->em->getRepository('AppBundle:Message')
                         ->deleteMessage($id);
 
@@ -154,6 +202,13 @@ class Message
         return $status;
     }
 
+    /**
+     * Checking if message can be displayed on chat, unsetting messages that cannot be displayed
+     *
+     * @param array $messages messages as array
+     *
+     * @return array checked messages
+     */
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
         for ($i = 0 ; $i < count($messages) ; $i++) {
@@ -162,11 +217,22 @@ class Message
                 unset($messages[$i]);
             }
         }
-        //check if message is not priv message or something
+
         return $messages;
     }
 
-    private function validateMessage(User $user, int $channel, string $text):bool
+    /**
+     * Validating if message is valid (not empty etc.) or User and Channel exists
+     *
+     * @param User $user User instance
+     *
+     * @param int $channel Channel's id
+     *
+     * @param string $text message text
+     *
+     * @return bool status
+     */
+    private function validateMessage(User $user, int $channel, string $text): bool
     {
         if (!(strlen(trim($text)) > 0)) {
             return false;
@@ -180,9 +246,14 @@ class Message
         return true;
     }
 
-    private function serializeMessages(&$messagesSerialized)
+    /**
+     * Changing mesages from entity to array
+     *
+     * @param $messages messages Messages to changed
+     */
+    private function changeMessagesToArray(&$messages)
     {
-        foreach ($messagesSerialized as &$message) {
+        foreach ($messages as &$message) {
             $message = $message->createArrayToJson();
         }
     }

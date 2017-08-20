@@ -2,8 +2,15 @@
 
 namespace AppBundle\Utils;
 
+use AppBundle\Entity\User;
 use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
+/**
+ * Service to change user's channel on chat
+ *
+ * Class Channel
+ * @package AppBundle\Utils
+ */
 class Channel
 {
     /**
@@ -19,6 +26,13 @@ class Channel
      */
     private $userOnline;
 
+    /**
+     * Channel constructor.
+     *
+     * @param ChatConfig $config
+     * @param SessionInterface $session
+     * @param UserOnline $userOnline
+     */
     public function __construct(ChatConfig $config, SessionInterface $session, UserOnline $userOnline)
     {
         $this->config = $config;
@@ -26,16 +40,28 @@ class Channel
         $this->userOnline = $userOnline;
     }
 
-    public function changeChannelOnChat($user, int $channel): bool
+    /**
+     * Check if channel exists and then update User's information in session and users online in database
+     * about User's channel
+     *
+     * @param User $user User instance
+     *
+     * @param int $channel channel's Id
+     *
+     * @return bool status of changing channel
+     */
+    public function changeChannelOnChat(User $user, int $channel): bool
     {
         if (!array_key_exists($channel, $this->config->getChannels())) {
             return false;
         }
         $this->userOnline->updateUserOnline($user, $channel);
+
         $this->session->set('channel', $channel);
         $lastId = $this->session->get('lastId');
         $this->session->set('lastId', $lastId);
         $this->session->set('changedChannel', 1);
+
         return true;
     }
 }

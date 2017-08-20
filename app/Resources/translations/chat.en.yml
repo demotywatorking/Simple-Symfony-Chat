@@ -1,0 +1,10 @@
+panel: Administrator Panel
+logout: Logout
+messages: Messages
+online: Users online
+emoticons: Emoticons
+send: Send
+
+channel:
+    Default: Default
+    Channel 2: Channel 2

@@ -42,22 +42,6 @@ class UserOnline
     private $userInfo;
 
     /**
-     * @return mixed
-     */
-    public function getChannel()
-    {
-        return $this->channel;
-    }
-
-    /**
-     * @param mixed $channel
-     */
-    public function setChannel($channel)
-    {
-        $this->channel = $channel;
-    }
-
-    /**
      * $var int
      *
      * @ORM\Column(name="channel", type="integer")
@@ -65,6 +49,24 @@ class UserOnline
     private $channel;
 
     /**
+     * @return int Channel's id
+     */
+    public function getChannel()
+    {
+        return $this->channel;
+    }
+
+    /**
+     * @param int $channel Channel's id
+     */
+    public function setChannel($channel)
+    {
+        $this->channel = $channel;
+    }
+
+    /**
+     * Gets User's username from relation
+     *
      * @return string
      */
     public function getUserName(): string
@@ -73,6 +75,8 @@ class UserOnline
     }
 
     /**
+     * Gets User's role from relation
+     *
      * @return int Return user's role as text
      */
     public function getRole():string
@@ -93,7 +97,7 @@ class UserOnline
     /**
      * Set userId
      *
-     * @param integer $userId
+     * @param int $userId
      *
      * @return UserOnline
      */
@@ -129,7 +133,7 @@ class UserOnline
     }
 
     /**
-     * @return mixed
+     * @return User User's info from relation
      */
     public function getUserInfo()
     {
@@ -146,11 +150,21 @@ class UserOnline
         return $this->onlineTime;
     }
 
+    /**
+     * Set userInfo
+     *
+     * @param User $userInfo
+     */
     public function setUserInfo($userInfo)
     {
         $this->userInfo = $userInfo;
     }
 
+    /**
+     * Create array with user's information: id, username and role
+     *
+     * @return array Array with information about user
+     */
     public function createArrayToJson()
     {
         return [

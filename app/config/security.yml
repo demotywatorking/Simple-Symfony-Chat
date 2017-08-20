@@ -17,12 +17,13 @@ security:
             form_login:
                 provider: fos_userbundle
                 csrf_token_generator: security.csrf.token_manager
-                login_path: /login
-                check_path: /login_check
+                login_path: fos_user_security_login
+                check_path: fos_user_security_check
                 always_use_default_target_path: true
                 default_target_path: add_online
-
-            logout:       true
+            logout:
+                path: fos_user_security_logout
+                target: homepage
             anonymous:    true
 
     access_control:

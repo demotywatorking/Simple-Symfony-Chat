@@ -10,67 +10,89 @@ use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Class ChatController
+ * @package AppBundle\Controller
+ */
 class ChatController extends Controller
 {
     /**
      * @Route("/chat/", name="chat_index")
      *
+     * Show main window
+     *
+     * Get messages from last 24h and users online then show chat's main window,
+     * last messages and send variables to twig to configure var to jQuery
+     *
+     * @param Request $request A Request instance
+     *
      * @return Response Return view with last messages
      */
-    public function showAction(): Response
+    public function showAction(Request $request): Response
     {
         $user = $this->getUser();
         $channel = $this->get('session')->get('channel');
+        $locale = $request->getLocale();
 
-        $messages = $this->get('app.Message')
+        $messages = $this->get('chat.Message')
                     ->getMessagesInIndex();
 
-        $online = $this->get('app.OnlineUsers');
-        $online->updateUserOnline($user, $channel);
-        $usersOnline = $online->getOnlineUsers($user->getId(), $channel);
+        $usersOnlineService = $this->get('chat.OnlineUsers');
+        $usersOnlineService->updateUserOnline($user, $channel);
+        $usersOnline = $usersOnlineService->getOnlineUsers($user->getId(), $channel);
 
-        $channels = $this->get('app.ChatConfig')->getChannels();
+        $channels = $this->get('chat.ChatConfig')->getChannels();
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,
             'usersOnline' => $usersOnline,
             'user' => $user,
             'user_channel' => $channel,
-            'channels' => $channels
+            'channels' => $channels,
+            'locale' => $locale
         ]);
     }
 
     /**
      * @Route("/chat/add/", name="chat_add")
      *
-     * Method to handle adding new message to database
+     * Add new message
      *
-     * @return JsonResponse returning status success or failure with description why
+     * Check if message can be added to database and get messages that was wrote between
+     * last refresh and calling this method
+     *
+     * @param Request $request A Request instance
+     *
+     * @return JsonResponse returning status success or failure and new messages
      */
     public function addAction(Request $request): JsonResponse
     {
         $messageText = $request->get('text');
         $user = $this->getUser();
-        $channel = $this->get('session')->get('channel');
 
-        $message = $this->get('app.Message');
-        $status = $message->addMessageToDatabase($user, $channel, $messageText);
+        $messageService = $this->get('chat.Message');
+        $status = $messageService->addMessageToDatabase($user, $messageText);
 
         return $this->json($status);
     }
+
     /**
      * @Route("/chat/refresh", name="chat_refresh")
      *
-     * @return JsonResponse
+     * Refresh chat
+     *
+     * Get new messages from last refresh and get users online
+     *
+     * @return JsonResponse return messages and users online
      */
-    public function refreshAction()
+    public function refreshAction(): JsonResponse
     {
-        $message = $this->get('app.Message');
-        $messages = $message->getMessagesFromLastId();
+        $messageService = $this->get('chat.Message');
+        $messages = $messageService->getMessagesFromLastId();
 
-        $online = $this->get('app.OnlineUsers');
-        $online->updateUserOnline($this->getUser(), $this->get('session')->get('channel'));
-        $usersOnline = $online->getOnlineUsers($this->getUser()->getId(), $this->get('session')->get('channel'));
+        $usersOnlineService = $this->get('chat.OnlineUsers');
+        $usersOnlineService->updateUserOnline($this->getUser(), $this->get('session')->get('channel'));
+        $usersOnline = $usersOnlineService->getOnlineUsers($this->getUser()->getId(), $this->get('session')->get('channel'));
 
         $return = [
             'messages' => $messages,
@@ -82,30 +104,42 @@ class ChatController extends Controller
     /**
      * @Route("/chat/delete", name="chat_delete")
      * @Security("has_role('ROLE_MODERATOR')")
+     *
+     * Delete message from database
+     *
+     * Checking if message exists in database and then delete it from database,
+     * add message to database that message was deleted and by whom
+     *
+     * @param Request $request A Request instance
+     *
+     * @return JsonResponse status true or false
      */
-    public function deleteAction(Request $request)
+    public function deleteAction(Request $request): JsonResponse
     {
         $id = $request->get('messageId');
-        $channel = $this->get('session')->get('channel');
         $user = $this->getUser();
         if (!$id) {
             return $this->json(['status' => 0]);
         }
 
-        $status = $this->get('app.Message')->deleteMessage($id, $channel, $user);
+        $status = $this->get('chat.Message')->deleteMessage($id, $user);
 
         return $this->json(['status' => $status]);
     }
 
     /**
-     * Delete User's info from online users in database
-     *
      * @Route("/chat/logout", name="chat_logout")
+     *
+     * Logout from chat
+     *
+     * Delete User's info from online users in database and then redirect to logout in fosuserbundle
+     *
+     * @return RedirectResponse Redirect to fos logout
      */
     public function logoutAction(): RedirectResponse
     {
-        $online = $this->get('app.OnlineUsers');
-        $online->deleteUserWhenLogout($this->getUser()->getId());
+        $usersOnlineService = $this->get('chat.OnlineUsers');
+        $usersOnlineService->deleteUserWhenLogout($this->getUser()->getId());
 
         return $this->redirectToRoute('fos_user_security_logout');
     }
@@ -113,11 +147,17 @@ class ChatController extends Controller
     /**
      * @Route("/chat/channel", name="change_channel_chat")
      *
-     * @param int $channel
+     * Change channel on chat
+     *
+     * Checking if channel exists and change user's channel in session
+     *
+     * @param Request $request A Request instance
+     *
+     * @return JsonResponse return status of changing channel
      */
     public function changeChannelAction(Request $request): JsonResponse
     {
-        $channelService = $this->get('app.Channel');
+        $channelService = $this->get('chat.Channel');
         $channel = $request->get('channel');
         if (!$channel) {
             return $this->json('false');

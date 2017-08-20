@@ -2,13 +2,32 @@
 
 namespace AppBundle\Utils;
 
+use AppBundle\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 
+/**
+ * Service to add, check and delete from Users online in database
+ *
+ * Class UserOnline
+ * @package AppBundle\Utils
+ */
 class UserOnline
 {
+    /**
+     * @var EntityManagerInterface
+     */
     private $em;
+    /**
+     * @var ChatConfig
+     */
     private $config;
 
+    /**
+     * UserOnline constructor.
+     *
+     * @param EntityManagerInterface $em
+     * @param ChatConfig $config
+     */
     public function __construct(EntityManagerInterface $em, ChatConfig $config)
     {
         $this->em = $em;
@@ -16,12 +35,12 @@ class UserOnline
     }
 
     /**
-     * Method add user's info to user_online table. I am doing it because I will know when user is disconnected from chat
-     * for long time
+     * Adds user's info to user_online table.
      *
-     *
+     * @param User $user User instance
+     * @param int $channel Channel's id
      */
-    public function addUserOnline($user, int $channel)
+    public function addUserOnline(User $user, int $channel)
     {
         if ( $this->em->getRepository('AppBundle:UserOnline')
             ->findOneBy([
@@ -43,11 +62,12 @@ class UserOnline
     }
 
     /**
-     * Update User's Time in Database - User will not be kicked for inactivity
+     * Update User's Time in database - User will not be kicked for inactivity
      *
-     * @param $user
+     * @param User $user User instance
+     * @param int $channel Channel's id
      */
-    public function updateUserOnline($user, int $channel)
+    public function updateUserOnline(User $user, int $channel)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
                         ->findOneBy([
@@ -67,8 +87,10 @@ class UserOnline
     /**
      * Get array with online Users
      *
-     * @param int $id User's Id
-     * @return array array of online Users
+     * @param int $id User's id
+     * @param int $channel Channel's id
+     *
+     * @return array Array of online Users
      */
     public function getOnlineUsers(int $id, int $channel)
     {
@@ -83,6 +105,11 @@ class UserOnline
         return $usersOnline;
     }
 
+    /**
+     * Delete User's info from users online when logout from chat
+     *
+     * @param int $id User's id
+     */
     public function deleteUserWhenLogout(int $id)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
@@ -94,9 +121,11 @@ class UserOnline
     }
 
     /**
-     * Delete Inactive Users from database except current User
+     * Delete Inactive Users from database except current User if user is inactive more
+     * than inactive time from chat config
      *
-     * @param int $id User's Id
+     * @param int $id User's id
+     * @param int $channel Channel's id
      */
     private function deleteInactiveUsers(int $id, int $channel)
     {

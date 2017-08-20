@@ -29,12 +29,18 @@ class User extends BaseUser
      */
     protected $userMessage;
 
+    /**
+     * User constructor.
+     */
     public function __construct()
     {
         parent::__construct();
         $this->userMessage = new ArrayCollection();
     }
 
+    /**
+     * @return string User's role change to text (used as css class)
+     */
     public function getChatRoleAsText()
     {
         $role = $this->getRoles();
@@ -50,9 +56,10 @@ class User extends BaseUser
     }
 
     /**
-     * In this chat you do not need to have more roles than 1
+     * Changes User's role, removes other roles
      *
-     * @param string $role
+     * @param string $role Role that User will have
+     *
      * @return $this
      */
     public function changeRole($role)
