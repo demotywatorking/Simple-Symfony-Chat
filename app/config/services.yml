@@ -27,6 +27,12 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
+    chat.registration_complet:
+        class: AppBundle\EventListener\RegistrationCompleteListener`
+        arguments: ['@router']
+        tags:
+            - { name: kernel.event_subscriber }
+
     chat.Message:
         public: true
         class: AppBundle\Utils\Message

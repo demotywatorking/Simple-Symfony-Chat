@@ -26,7 +26,7 @@ class ChatController extends Controller
      *
      * @param Request $request A Request instance
      *
-     * @return Response Return view with last messages
+     * @return Response Return main page with all start information
      */
     public function showAction(Request $request): Response
     {
@@ -63,7 +63,7 @@ class ChatController extends Controller
      *
      * @param Request $request A Request instance
      *
-     * @return JsonResponse returning status success or failure and new messages
+     * @return JsonResponse returns status success or failure and new messages
      */
     public function addAction(Request $request): JsonResponse
     {
@@ -83,7 +83,7 @@ class ChatController extends Controller
      *
      * Get new messages from last refresh and get users online
      *
-     * @return JsonResponse return messages and users online
+     * @return JsonResponse returns messages and users online
      */
     public function refreshAction(): JsonResponse
     {
@@ -153,7 +153,7 @@ class ChatController extends Controller
      *
      * @param Request $request A Request instance
      *
-     * @return JsonResponse return status of changing channel
+     * @return JsonResponse returns status of changing channel
      */
     public function changeChannelAction(Request $request): JsonResponse
     {

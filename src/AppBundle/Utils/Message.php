@@ -98,7 +98,6 @@ class Message
         return $messagesToDisplay;
     }
 
-
     /**
      * Gets messages from last 24h from new channel, then set id of last message to session if any message exists,
      * than change messages from entitys to array and checking if messages can be displayed
@@ -161,6 +160,8 @@ class Message
                     $message->getId(),
                     $channel
             );
+
+            $this->changeMessagesToArray($messages);
             $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
             $this->changeMessagesToArray($messagesToDisplay);
         }
