@@ -77,7 +77,7 @@ class ChatController extends Controller
     }
 
     /**
-     * @Route("/chat/refresh", name="chat_refresh")
+     * @Route("/chat/refresh/", name="chat_refresh")
      *
      * Refresh chat
      *
@@ -102,7 +102,7 @@ class ChatController extends Controller
     }
 
     /**
-     * @Route("/chat/delete", name="chat_delete")
+     * @Route("/chat/delete/", name="chat_delete")
      * @Security("has_role('ROLE_MODERATOR')")
      *
      * Delete message from database

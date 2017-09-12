@@ -28,7 +28,7 @@ services:
         tags: ['controller.service_arguments']
 
     chat.registration_complet:
-        class: AppBundle\EventListener\RegistrationCompleteListener`
+        class: AppBundle\EventListener\RegistrationCompleteListener
         arguments: ['@router']
         tags:
             - { name: kernel.event_subscriber }
