@@ -3,8 +3,23 @@ String.prototype.replaceAll = function(str1, str2, ignore)
 {
     return this.replace(new RegExp(str1.replace(/([\/\,\!\\\^\$\{\}\[\]\(\)\.\*\+\?\|\<\>\-\&])/g,"\\$&"),(ignore?"gi":"g")),(typeof(str2)=="string")?str2.replace(/\$/g,"$$$$"):str2);
 };
+
+
 $(document).ready(function()
 {
+    Notification.requestPermission();
+
+    function notification(text)
+    {
+        if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            var username = text.username;
+            var messageText = text.text;
+
+            var notification = new Notification(username, { 'body' :  messageText });
+            setTimeout(notification.close.bind(notification), 5000);
+        }
+    }
     var channelChanged = 0;
     var emoticonsOpened = 0;
     startChat();
@@ -100,6 +115,7 @@ $(document).ready(function()
                         $('div[data-id="' + val.id + '"]').remove();
                     } else {
                         createNewMessage(val);
+                        notification(val);
                         if (channelChanged === 0) {
                             var audio = new Audio(newMessageSound);
                             audio.currentTime = 0;

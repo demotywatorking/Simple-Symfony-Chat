@@ -15,3 +15,10 @@ Simple Symfony Chat
 - Clickable links
 - Possibility to delete messages
 - Admin Panel to promote/demote users
+- Notifications when new message
+
+**Installation:**
+
+git clone https://github.com/demotywatorking/Simple-Symfony-Chat.git
+
+composer install
