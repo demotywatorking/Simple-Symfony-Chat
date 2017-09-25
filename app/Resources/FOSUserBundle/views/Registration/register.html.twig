@@ -21,9 +21,6 @@
 {{ form_start(form, {'method': 'post', 'action': path('fos_user_registration_register'), 'attr': {'class': 'fos_user_registration_register'}}) }}
 
     {{ form_widget(form) }}
-<div>
-    <div class="g-recaptcha" data-sitekey="6Lc5wRQTAAAAALTIk8kwWNaOGv3g9A1O1nZQrVQ1"></div>
     <input class="btn btn-lg btn-primary btn-block" type="submit" value="{{ 'registration.submit'|trans }}" />
-</div>
 {{ form_end(form) }}
 {% endblock %}
