@@ -24,4 +24,4 @@ git clone https://github.com/demotywatorking/Simple-Symfony-Chat.git
 composer install
 
 **Live Demo:**
-- http://www.chatdemo.tk/
+- https://www.chatdemo.tk/
