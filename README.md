@@ -22,3 +22,6 @@ Simple Symfony Chat
 git clone https://github.com/demotywatorking/Simple-Symfony-Chat.git
 
 composer install
+
+**Live Demo:**
+- https://chatdemo.tk/
