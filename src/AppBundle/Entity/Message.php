@@ -201,18 +201,8 @@ class Message
     public function createArrayToJson()
     {
         $textSplitted = explode(' ', $this->text);
-        if ($textSplitted[0] == '/delete') {
-            return [
-                'id' => $textSplitted[1],
-                'user_id' => $this->userId,
-                'date' => $this->date,
-                'text' => 'delete',
-                'channel' => $this->channel,
-                'username' => $this->userInfo->getUsername(),
-                'user_role' => $this->userInfo->getChatRoleAsText(),
-            ];
-        }
-        return [
+
+        $returnedArray = [
             'id' => $this->id,
             'user_id' => $this->userId,
             'date' => $this->date,
@@ -221,6 +211,12 @@ class Message
             'username' => $this->userInfo->getUsername(),
             'user_role' => $this->userInfo->getChatRoleAsText(),
         ];
+
+        if ($textSplitted[0] == '/delete') {
+            $returnedArray['id'] = $textSplitted[1];
+            $returnedArray['text'] = 'delete';
+        }
+        return $returnedArray;
     }
 
 }

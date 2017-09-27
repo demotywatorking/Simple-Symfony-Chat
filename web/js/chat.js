@@ -91,7 +91,7 @@ $(document).ready(function()
                     '<div class="message" data-id="' + msg.id + '"><span class="date">('
                     + d +
                     ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span><span class="message-text"> '
-                    + parseMessage(text) + '</span>' + del + '</div>'
+                    + parseMessage(msg.text) + '</span>' + del + '</div>'
                 );
             }
             if (msg.messages) {

@@ -39,7 +39,4 @@ class RegistrationCompleteListener implements EventSubscriberInterface
 
     }
 
-
-
-
 }

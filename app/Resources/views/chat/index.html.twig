@@ -88,7 +88,7 @@
                             <span class="date">({{ message.date|date('H:i:s') }})</span>
                             <span class="{{ message.user_role }} text-bold">{{ message.username }}:</span>
                             <span class="message-text">
-                                {{ message.text }}
+                                {{ message.text|raw }}
                             </span>
                             {% if is_granted('ROLE_MODERATOR') %}
                             <span class="pull-right kursor" data-id="{{ message.id }}">&times;</span>

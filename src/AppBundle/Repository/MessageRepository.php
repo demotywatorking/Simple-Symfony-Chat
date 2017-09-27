@@ -113,9 +113,9 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
             ->orderBy('m.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getResult();
+            ->getSingleResult();
         if ($message) {
-            return $message[0]->getId();
+            return $message->getId();
         } else {
             return 0;
         }

@@ -138,6 +138,8 @@ class Message
             return ['status' => 'false'];
         }
 
+        $text = htmlentities($text);
+
         $message = new \AppBundle\Entity\Message();
         $message->setUserInfo($user);
         $message->setChannel($channel);
@@ -170,6 +172,7 @@ class Message
 
         return [
             'id' => $id,
+            'text' => $text,
             'status' => 'true',
             'messages' => $messagesToDisplay ?? ''
         ];
