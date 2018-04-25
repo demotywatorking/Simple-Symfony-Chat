@@ -45,7 +45,7 @@ class Message
      *
      * @return array Array of messages changed to array
      */
-    public function getMessagesInIndex()
+    public function getMessagesInIndex(User $user)
     {
         $channel = $this->session->get('channel');
 
@@ -61,7 +61,7 @@ class Message
                 ->getIdFromLastMessage()
             );
         }
-        $this->changeMessagesToArray($messages);
+        $this->changeMessagesToArray($messages, $user);
 
         return  $this->checkIfMessagesCanBeDisplayed($messages);
     }
@@ -72,14 +72,14 @@ class Message
      *
      * @return array Array of messages changed to array
      */
-    public function getMessagesFromLastId()
+    public function getMessagesFromLastId(User $user)
     {
         $lastId = $this->session->get('lastId');
         $channel = $this->session->get('channel');
         //only when channel was changed
         if($this->session->get('changedChannel')) {
             $this->session->remove('changedChannel');
-            return $this->getMessagesAfterChangingChannel($channel);
+            return $this->getMessagesAfterChangingChannel($channel, $user);
         }
 
         $messages = $this->em->getRepository('AppBundle:Message')
@@ -89,7 +89,7 @@ class Message
         if (end($messages)) {
             $this->session->set('lastId', end($messages)->getId());
         }
-        $this->changeMessagesToArray($messages);
+        $this->changeMessagesToArray($messages, $user);
 
         $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
 
@@ -104,7 +104,7 @@ class Message
      *
      * @return array Array of messages changed to array
      */
-    private function getMessagesAfterChangingChannel(int $channel)
+    private function getMessagesAfterChangingChannel(int $channel, User $user)
     {
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastIdAfterChangingChannel($this->config->getMessageLimit(), $channel);
@@ -113,7 +113,7 @@ class Message
             ->getIdFromLastMessage();
         $this->session->set('lastId', $lastId);
 
-        $this->changeMessagesToArray($messages);
+        $this->changeMessagesToArray($messages, $user);
         $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
 
         return  $messagesToDisplay;
@@ -139,28 +139,25 @@ class Message
         $special = $this->specialMessages->specialMessages($text, $user);
 
         if ($special['userId'] == 1000000) {
-            //BOT
+            $originalUser = $user;
+            $user = $this->em->find('AppBundle:User', 1000000);
         }
-
-
+        $text = htmlentities($text);
 
         $message = new \AppBundle\Entity\Message();
         $message->setUserInfo($user);
         $message->setChannel($channel);
-        if ($special['text']) {
-            $text = htmlentities($special['text']);
-        } else {
-            $text = htmlentities($text);
-        }
         $message->setText($text);
         $message->setDate(new \DateTime());
-        $this->em->getRepository('AppBundle:Message');
 
         try {
             $this->em->persist($message);
             $this->em->flush();
         } catch(\Throwable $e) {
             return ['status' => 'false'];
+        }
+        if (isset($originalUser)) {
+            $user = $originalUser;
         }
         $id = $message->getId();
         //check if there was new messages between last message and send message
@@ -172,16 +169,17 @@ class Message
                     $channel
             );
 
-            $this->changeMessagesToArray($messages);
+            $this->changeMessagesToArray($messages, $user);
             $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
-            $this->changeMessagesToArray($messagesToDisplay);
+            $this->changeMessagesToArray($messagesToDisplay, $user);
         }
 
         $this->session->set('lastId', $message->getId());
 
         return [
             'id' => $id,
-            'text' => $text,
+            'userName' => $special['userId'] ? 'BOT' : $user->getUsername(),
+            'text' => $special['text'] ?? $text,
             'status' => 'true',
             'messages' => $messagesToDisplay ?? ''
         ];
@@ -264,10 +262,31 @@ class Message
      *
      * @param $messages messages Messages to changed
      */
-    private function changeMessagesToArray(&$messages)
+    private function changeMessagesToArray(&$messages, User $user)
     {
         foreach ($messages as &$message) {
-            $message = $message->createArrayToJson();
+            $message = $this->createArrayToJson($message, $user);
         }
+    }
+
+    private function createArrayToJson(\AppBundle\Entity\Message $message, User $user)
+    {
+        $text = $this->specialMessages->specialMessages($message->getText(), $user);
+        $returnedArray = [
+            'id' => $message->getId(),
+            'user_id' => $message->getUserId(),
+            'date' => $message->getDate(),
+            'text' => $text['text'] ?? $message->getText(),
+            'channel' => $message->getChannel(),
+            'username' => $message->getUsername(),
+            'user_role' => $message->getRole(),
+        ];
+
+        $textSplitted = explode(' ', $message->getText());
+        if ($textSplitted[0] == '/delete') {
+            $returnedArray['id'] = $textSplitted[1];
+            $returnedArray['text'] = 'delete';
+        }
+        return $returnedArray;
     }
 }

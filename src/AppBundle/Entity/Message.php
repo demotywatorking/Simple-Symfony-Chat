@@ -193,31 +193,5 @@ class Message
         return $this->channel;
     }
 
-    /**
-     * Change User Entity to array
-     *
-     * @return array array of user's entity changed to array
-     */
-    public function createArrayToJson()
-    {
-        $textSplitted = explode(' ', $this->text);
-
-        $returnedArray = [
-            'id' => $this->id,
-            'user_id' => $this->userId,
-            'date' => $this->date,
-            'text' => $this->text,
-            'channel' => $this->channel,
-            'username' => $this->userInfo->getUsername(),
-            'user_role' => $this->userInfo->getChatRoleAsText(),
-        ];
-
-        if ($textSplitted[0] == '/delete') {
-            $returnedArray['id'] = $textSplitted[1];
-            $returnedArray['text'] = 'delete';
-        }
-        return $returnedArray;
-    }
-
 }
 

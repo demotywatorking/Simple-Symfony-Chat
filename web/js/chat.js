@@ -90,7 +90,7 @@ $(document).ready(function()
                 $('#messages-box').append(
                     '<div class="message" data-id="' + msg.id + '"><span class="date">('
                     + d +
-                    ')</span> <span class="' + self.role + ' text-bold">' + self.username + ':</span><span class="message-text"> '
+                    ')</span> <span class="' + self.role + ' text-bold">' + msg.userName + ':</span><span class="message-text"> '
                     + parseMessage(msg.text) + '</span>' + del + '</div>'
                 );
             }
@@ -135,7 +135,7 @@ $(document).ready(function()
                 channelChanged = 0;
             }
         });
-        setTimeout(refreshChat, 2000);
+        setTimeout(refreshChat, 1500);
     }
 
     function createDate(dateInput)

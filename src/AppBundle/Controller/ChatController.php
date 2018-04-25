@@ -35,7 +35,7 @@ class ChatController extends Controller
         $locale = $request->getLocale();
 
         $messages = $this->get('chat.Message')
-                    ->getMessagesInIndex();
+                    ->getMessagesInIndex($user);
 
         $usersOnlineService = $this->get('chat.OnlineUsers');
         $usersOnlineService->updateUserOnline($user, $channel);
@@ -88,7 +88,7 @@ class ChatController extends Controller
     public function refreshAction(): JsonResponse
     {
         $messageService = $this->get('chat.Message');
-        $messages = $messageService->getMessagesFromLastId();
+        $messages = $messageService->getMessagesFromLastId($this->getUser());
 
         $usersOnlineService = $this->get('chat.OnlineUsers');
         $usersOnlineService->updateUserOnline($this->getUser(), $this->get('session')->get('channel'));

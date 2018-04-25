@@ -31,7 +31,7 @@ class SpecialMessages
             case '/roll':
                 return $this->roll($textSplitted, $user);
             default:
-                return ['text' => false, 'userId' => false];
+                return ['userId' => false];
         }
     }
 
@@ -52,8 +52,7 @@ class SpecialMessages
                 $dice[1] = 6;
             }
         }
-        $textSpecial = $user->getUsername().' '.$this->translator->trans('chat.roll', ['dice' => "{$dice[0]}d{$dice[1]}"], 'chat', $this->locale).' ';
-//        $textSpecial .= "{$dice[0]}d{$dice[1]} ";
+        $textSpecial = $user->getUsername().' '.$this->translator->trans('chat.roll', ['chat.dice' => "{$dice[0]}d{$dice[1]}"], 'chat', $this->locale).' ';
         for ( $i = 0 ; $i < $dice[0] ; $i++) {
             $textSpecial .= $this->rollDice($dice[1]).', ';
         }

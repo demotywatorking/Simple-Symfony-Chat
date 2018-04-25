@@ -11,4 +11,4 @@ channel:
     Private: Prywatny
 
 chat:
-    roll: rzuca kostką dice i otrzymuje
+    roll: rzuca kostką chat.dice i otrzymuje wyniki
