@@ -8,3 +8,7 @@ send: Send
 channel:
     Default: Default
     Channel 2: Channel 2
+    Private: Private
+
+chat:
+    roll: rolls dice dice and gets

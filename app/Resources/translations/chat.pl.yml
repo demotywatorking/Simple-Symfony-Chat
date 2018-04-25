@@ -8,3 +8,7 @@ send: Wyślij
 channel:
     Default: Domyślny
     Channel 2: Kanał 2
+    Private: Prywatny
+
+chat:
+    roll: rzuca kostką dice i otrzymuje

@@ -113,7 +113,7 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
             ->orderBy('m.id', 'DESC')
             ->setMaxResults(1)
             ->getQuery()
-            ->getSingleResult();
+            ->getOneOrNullResult();
         if ($message) {
             return $message->getId();
         } else {
@@ -128,7 +128,7 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
      *
      * @return array status of deleting
      */
-    public function deleteMessage($id)
+    public function deleteMessage(int $id)
     {
         return $this->createQueryBuilder('m')
             ->delete()

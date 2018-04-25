@@ -36,7 +36,7 @@ services:
     chat.Message:
         public: true
         class: AppBundle\Utils\Message
-        arguments: ['@doctrine.orm.entity_manager', '@session', '@chat.ChatConfig']
+        arguments: ['@doctrine.orm.entity_manager', '@session', '@chat.ChatConfig', '@chat.SpecialMessage']
 
     chat.OnlineUsers:
         public: true
@@ -56,3 +56,8 @@ services:
         public: true
         class: AppBundle\Utils\AdminPanel
         arguments: ['@doctrine.orm.entity_manager']
+
+    chat.SpecialMessage:
+        public: true
+        class: AppBundle\Utils\SpecialMessages
+        arguments: ['@translator']

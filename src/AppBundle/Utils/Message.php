@@ -26,19 +26,17 @@ class Message
      * @var ChatConfig
      */
     private $config;
-
     /**
-     * Message constructor.
-     *
-     * @param EntityManagerInterface $em
-     * @param SessionInterface $session
-     * @param ChatConfig $config
+     * @var SpecialMessages
      */
-    public function __construct(EntityManagerInterface $em, SessionInterface $session, ChatConfig $config)
+    private $specialMessages;
+
+    public function __construct(EntityManagerInterface $em, SessionInterface $session, ChatConfig $config, SpecialMessages $special)
     {
         $this->em = $em;
         $this->session = $session;
         $this->config = $config;
+        $this->specialMessages = $special;
     }
 
     /**
@@ -138,11 +136,22 @@ class Message
             return ['status' => 'false'];
         }
 
-        $text = htmlentities($text);
+        $special = $this->specialMessages->specialMessages($text, $user);
+
+        if ($special['userId'] == 1000000) {
+            //BOT
+        }
+
+
 
         $message = new \AppBundle\Entity\Message();
         $message->setUserInfo($user);
         $message->setChannel($channel);
+        if ($special['text']) {
+            $text = htmlentities($special['text']);
+        } else {
+            $text = htmlentities($text);
+        }
         $message->setText($text);
         $message->setDate(new \DateTime());
         $this->em->getRepository('AppBundle:Message');
@@ -244,7 +253,7 @@ class Message
         if ($user->getId() <= 0) {
             return false;
         }
-        if (!array_key_exists($channel, $this->config->getChannels())) {
+        if (!array_key_exists($channel, $this->config->getChannels($user))) {
             return false;
         }
         return true;

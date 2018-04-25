@@ -52,7 +52,7 @@ class Channel
      */
     public function changeChannelOnChat(User $user, int $channel): bool
     {
-        if (!array_key_exists($channel, $this->config->getChannels())) {
+        if (!array_key_exists($channel, $this->config->getChannels($user))) {
             return false;
         }
         $this->userOnline->updateUserOnline($user, $channel);

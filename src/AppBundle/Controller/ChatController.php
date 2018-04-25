@@ -41,7 +41,7 @@ class ChatController extends Controller
         $usersOnlineService->updateUserOnline($user, $channel);
         $usersOnline = $usersOnlineService->getOnlineUsers($user->getId(), $channel);
 
-        $channels = $this->get('chat.ChatConfig')->getChannels();
+        $channels = $this->get('chat.ChatConfig')->getChannels($user);
 
         return $this->render('chat/index.html.twig',[
             'messages' => $messages,

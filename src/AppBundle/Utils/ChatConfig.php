@@ -2,6 +2,7 @@
 
 namespace AppBundle\Utils;
 
+use AppBundle\Entity\User;
 
 class ChatConfig
 {
@@ -26,9 +27,9 @@ class ChatConfig
     /**
      * @return array Array of channels
      */
-    public function getChannels(): array
+    public function getChannels(User $user): array
     {
-        return self::CHANNELS;
+        return self::CHANNELS +  $this->getUserPrivateChannel($user);
     }
 
     /**
@@ -45,6 +46,14 @@ class ChatConfig
     public function getMessageLimit(): int
     {
         return self::MESSAGE_LIMIT;
+    }
+
+    private function getUserPrivateChannel(User $user):array
+    {
+        $channelId = 1000000 + $user->getId();
+        return [
+            $channelId => 'Private'
+        ];
     }
 
 }
