@@ -2,8 +2,7 @@ Simple Symfony Chat
 ========================
 
 **Requirements:**
-- Symfony >= 3.3
-- PHP >= 7.0
+- PHP >= 7.1
 - MySQL
 - Enabled JavaScript
 - Enabled Cookies
