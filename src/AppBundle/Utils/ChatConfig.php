@@ -25,6 +25,11 @@ class ChatConfig
     ];
 
     /**
+     * var bool Login by MyBB forum user
+     */
+    const MYBB = 1;
+
+    /**
      * @return array Array of channels
      */
     public function getChannels(User $user): array

@@ -27,6 +27,13 @@ services:
         public: true
         tags: ['controller.service_arguments']
 
+    checkLoginMyBB:
+            class: AppBundle\EventListener\LoginByMyBBListener
+            arguments: ['@session', '@doctrine.orm.entity_manager', '@security.token_storage',
+                        '@router', '@request_stack', '@fos_user.user_manager'
+                        ]
+            tags:
+                - { name: kernel.event_subscriber }
     chat.registration_complet:
         class: AppBundle\EventListener\RegistrationCompleteListener
         arguments: ['@router']

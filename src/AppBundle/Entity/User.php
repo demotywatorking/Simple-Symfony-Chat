@@ -2,6 +2,7 @@
 
 namespace AppBundle\Entity;
 
+use AppBundle\Utils\ChatConfig;
 use Doctrine\Common\Collections\ArrayCollection;
 use FOS\UserBundle\Model\User as BaseUser;
 use Doctrine\ORM\Mapping as ORM;
@@ -36,6 +37,14 @@ class User extends BaseUser
     {
         parent::__construct();
         $this->userMessage = new ArrayCollection();
+    }
+
+    public function setId(int $id)
+    {
+        if (!ChatConfig::MYBB) {
+            return;
+        }
+        $this->id = $id;
     }
 
     /**
