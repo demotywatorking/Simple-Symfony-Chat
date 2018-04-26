@@ -141,6 +141,7 @@ class Message
         if ($special['userId'] == 1000000) {
             $originalUser = $user;
             $user = $this->em->find('AppBundle:User', 1000000);
+            $text = $special['text'];
         }
         $text = htmlentities($text);
 
@@ -169,7 +170,6 @@ class Message
                     $channel
             );
 
-            $this->changeMessagesToArray($messages, $user);
             $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
             $this->changeMessagesToArray($messagesToDisplay, $user);
         }
@@ -179,7 +179,7 @@ class Message
         return [
             'id' => $id,
             'userName' => $special['userId'] ? 'BOT' : $user->getUsername(),
-            'text' => $special['text'] ?? $text,
+            'text' => $special['showText'] ?? $text,
             'status' => 'true',
             'messages' => $messagesToDisplay ?? ''
         ];
@@ -222,7 +222,8 @@ class Message
      */
     private function checkIfMessagesCanBeDisplayed(array $messages)
     {
-        for ($i = 0 ; $i < count($messages) ; $i++) {
+        $count = count($messages);
+        for ($i = 0 ; $i < $count ; $i++) {
             $textSplitted = explode(' ', $messages[$i]['text']);
             if ($textSplitted[0] == '/delete') {
                 unset($messages[$i]);
@@ -271,12 +272,13 @@ class Message
 
     private function createArrayToJson(\AppBundle\Entity\Message $message, User $user)
     {
-        $text = $this->specialMessages->specialMessages($message->getText(), $user);
+        $text = $this->specialMessages->specialMessagesDisplay($message->getText(), $user);
+
         $returnedArray = [
             'id' => $message->getId(),
             'user_id' => $message->getUserId(),
             'date' => $message->getDate(),
-            'text' => $text['text'] ?? $message->getText(),
+            'text' => $text['showText'] ?? $message->getText(),
             'channel' => $message->getChannel(),
             'username' => $message->getUsername(),
             'user_role' => $message->getRole(),
