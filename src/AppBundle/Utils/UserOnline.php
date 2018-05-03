@@ -70,9 +70,9 @@ class UserOnline
     public function updateUserOnline(User $user, int $channel)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
-                        ->findOneBy([
-                            'userId' => $user->getId()
-                        ]);
+                    ->findOneBy([
+                        'userId' => $user->getId()
+                    ]);
         if (!$online) {
             $this->addUserOnline($user, $channel);
             return;

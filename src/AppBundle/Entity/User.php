@@ -39,12 +39,16 @@ class User extends BaseUser
         $this->userMessage = new ArrayCollection();
     }
 
+    /**
+     * @param int $id
+     * Changing id available only if integrating with forum.
+     * Otherwise use autoincrementing
+     */
     public function setId(int $id)
     {
-        if (!ChatConfig::MYBB) {
-            return;
+        if (ChatConfig::getPhpBB() || ChatConfig::getMyBB()) {
+            $this->id = $id;
         }
-        $this->id = $id;
     }
 
     /**

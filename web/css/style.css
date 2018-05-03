@@ -107,3 +107,7 @@ html, body
 .user {
     color: blue;
 }
+
+.light {
+    background: #5cb85c;
+}

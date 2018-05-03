@@ -28,12 +28,21 @@ services:
         tags: ['controller.service_arguments']
 
     checkLoginMyBB:
-            class: AppBundle\EventListener\LoginByMyBBListener
-            arguments: ['@session', '@doctrine.orm.entity_manager', '@security.token_storage',
-                        '@router', '@request_stack', '@fos_user.user_manager'
-                        ]
-            tags:
-                - { name: kernel.event_subscriber }
+        class: AppBundle\EventListener\LoginByMyBBListener
+        arguments: ['@session', '@doctrine.orm.entity_manager', '@security.token_storage',
+                    '@router', '@request_stack', '@fos_user.user_manager'
+                    ]
+        tags:
+            - { name: kernel.event_subscriber }
+
+    checkLoginPhpBB:
+        class: AppBundle\EventListener\LoginByPhpBBListener
+        arguments: ['@session', '@doctrine.orm.entity_manager', '@security.token_storage',
+                    '@router', '@request_stack', '@fos_user.user_manager'
+                    ]
+        tags:
+            - { name: kernel.event_subscriber }
+
     chat.registration_complet:
         class: AppBundle\EventListener\RegistrationCompleteListener
         arguments: ['@router']
@@ -53,6 +62,7 @@ services:
     chat.ChatConfig:
         public: true
         class: AppBundle\Utils\ChatConfig
+        arguments: ['@security.authorization_checker']
 
     chat.Channel:
         public: true
@@ -67,4 +77,4 @@ services:
     chat.SpecialMessage:
         public: true
         class: AppBundle\Utils\SpecialMessages
-        arguments: ['@translator']
+        arguments: ['@translator', '@doctrine.orm.entity_manager', '@chat.ChatConfig']

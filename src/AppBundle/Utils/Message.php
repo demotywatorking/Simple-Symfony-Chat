@@ -48,9 +48,10 @@ class Message
     public function getMessagesInIndex(User $user)
     {
         $channel = $this->session->get('channel');
+        $channelPrivate = $this->config->getUserPrivateChannelId($user);
 
         $messages = $this->em->getRepository('AppBundle:Message')
-            ->getMessagesFromLastDay($this->config->getMessageLimit(), $channel);
+            ->getMessagesFromLastDay($this->config->getMessageLimit(), $channel, $channelPrivate);
 
         if ($messages) {
             $this->session->set('lastId', $messages[0]->getId());
@@ -63,7 +64,7 @@ class Message
         }
         $this->changeMessagesToArray($messages, $user);
 
-        return  $this->checkIfMessagesCanBeDisplayed($messages);
+        return $this->checkIfMessagesCanBeDisplayed($messages);
     }
 
     /**
@@ -83,7 +84,7 @@ class Message
         }
 
         $messages = $this->em->getRepository('AppBundle:Message')
-            ->getMessagesFromLastId($lastId, $this->config->getMessageLimit(), $channel);
+            ->getMessagesFromLastId($lastId, $this->config->getMessageLimit(), $channel, $this->config->getUserPrivateChannelId($user));
 
         //if get new messages, update var lastId in session
         if (end($messages)) {
@@ -92,6 +93,9 @@ class Message
         $this->changeMessagesToArray($messages, $user);
 
         $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
+        usort($messagesToDisplay, function ($a, $b) {
+            return $a <=> $b;
+        });
 
         return $messagesToDisplay;
     }
@@ -100,14 +104,15 @@ class Message
      * Gets messages from last 24h from new channel, then set id of last message to session if any message exists,
      * than change messages from entitys to array and checking if messages can be displayed
      *
-     * @param int $channel Channel's Id
+     * @param int  $channel Channel's Id
+     * @param User $user Current user
      *
      * @return array Array of messages changed to array
      */
     private function getMessagesAfterChangingChannel(int $channel, User $user)
     {
         $messages = $this->em->getRepository('AppBundle:Message')
-            ->getMessagesFromLastIdAfterChangingChannel($this->config->getMessageLimit(), $channel);
+            ->getMessagesFromLastDay($this->config->getMessageLimit(), $channel, $this->config->getUserPrivateChannelId($user));
 
         $lastId = $this->em->getRepository('AppBundle:Message')
             ->getIdFromLastMessage();
@@ -115,6 +120,9 @@ class Message
 
         $this->changeMessagesToArray($messages, $user);
         $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
+        usort($messagesToDisplay, function ($a, $b) {
+            return $a <=> $b;
+        });
 
         return  $messagesToDisplay;
     }
@@ -124,7 +132,6 @@ class Message
      * save sent message's id to session as lastid
      *
      * @param User $user User instance, who is sending message
-     *
      * @param string $text Message's text
      *
      * @return array status of adding messages, and new messages from last refresh
@@ -140,19 +147,22 @@ class Message
 
         if ($special['userId'] == 1000000) {
             $originalUser = $user;
-            $user = $this->em->find('AppBundle:User', 1000000);
+            $user = $this->em->find('AppBundle:User', 1);
             $text = $special['text'];
         }
+
         $text = htmlentities($text);
 
-        $message = new \AppBundle\Entity\Message();
-        $message->setUserInfo($user);
-        $message->setChannel($channel);
-        $message->setText($text);
-        $message->setDate(new \DateTime());
+        if(!isset($special['message'])) {
+            $message = new \AppBundle\Entity\Message();
+            $message->setUserInfo($user);
+            $message->setChannel($channel);
+            $message->setText($text);
+            $message->setDate(new \DateTime());
+            $this->em->persist($message);
+        }
 
         try {
-            $this->em->persist($message);
             $this->em->flush();
         } catch(\Throwable $e) {
             return ['status' => 'false'];
@@ -160,21 +170,30 @@ class Message
         if (isset($originalUser)) {
             $user = $originalUser;
         }
-        $id = $message->getId();
+        if(!isset($special['message'])) {
+            $id = $message->getId();
+            $count = 1;
+        } else {
+            $id = $special['message']->getId();
+            $count = $special['count'];
+        }
+
         //check if there was new messages between last message and send message
-        if (($this->session->get('lastId') + 1) != $message->getId()) {
+        if (($this->session->get('lastId') + $count) != $id) {
             $messages = $this->em->getRepository('AppBundle:Message')
                 ->getMessagesBetweenIds(
                     $this->session->get('lastId'),
-                    $message->getId(),
-                    $channel
+                    $id,
+                    $channel,
+                    $this->config->getUserPrivateChannelId($user)
             );
 
             $messagesToDisplay = $this->checkIfMessagesCanBeDisplayed($messages);
+            $id = end($messagesToDisplay)->getId();
             $this->changeMessagesToArray($messagesToDisplay, $user);
         }
 
-        $this->session->set('lastId', $message->getId());
+        $this->session->set('lastId', $id);
 
         return [
             'id' => $id,
@@ -261,7 +280,7 @@ class Message
     /**
      * Changing mesages from entity to array
      *
-     * @param $messages messages Messages to changed
+     * @param $messages array[Message]|Message Messages to changed
      */
     private function changeMessagesToArray(&$messages, User $user)
     {

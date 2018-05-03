@@ -2,6 +2,7 @@
 namespace AppBundle\Utils;
 
 use AppBundle\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Translation\TranslatorInterface;
 
 class SpecialMessages
@@ -15,11 +16,16 @@ class SpecialMessages
      * @var string user's locale
      */
     private $locale;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $em;
 
-    public function __construct(TranslatorInterface $translator)
+    public function __construct(TranslatorInterface $translator, EntityManagerInterface $em)
     {
         $this->translator = $translator;
         $this->locale = $translator->getLocale();
+        $this->em = $em;
     }
 
     public function specialMessagesDisplay(string $text, User $user):array
@@ -29,6 +35,10 @@ class SpecialMessages
         switch ($textSplitted[0]) {
             case '/roll':
                 return $this->rollShow($textSplitted);
+            case '/privTo':
+                return $this->privToShow($textSplitted);
+            case '/privMsg':
+                return $this->privFromShow($textSplitted);
             default:
                 return ['userId' => false];
         }
@@ -41,6 +51,8 @@ class SpecialMessages
         switch ($textSplitted[0]) {
             case '/roll':
                 return $this->roll($textSplitted, $user);
+            case '/priv':
+                return $this->priv($textSplitted, $user);
             default:
                 return ['userId' => false];
         }
@@ -91,6 +103,78 @@ class SpecialMessages
         return [
             'showText' => $text,
             'userId' => 1000000
+        ];
+    }
+
+    private function priv(array $text, User $user):array
+    {
+        if (!isset($text[1])) {
+            $this->insertErrorMessage($user, $text, 'chat.wrongUsername');
+            return ['userId' => false, 'message' => false, 'count' => 1];
+        }
+        $textSplitted = explode(' ', $text[1], 2);
+        $secondUser = $this->em->getRepository('AppBundle:User')->findOneBy(['username' => $textSplitted[0]]);
+        if (!$secondUser) {
+            $this->insertErrorMessage($user, $textSplitted, 'error.userNotFound');
+            return ['userId' => false, 'message' => false, 'count' => 1];
+        }
+
+        $message1 = $this->insertPw($user, $secondUser, $textSplitted);
+        $showText = $this->translator->trans('chat.privTo', ['chat.user' => $secondUser->getUsername()], 'chat', $this->locale) . ' ' . $textSplitted[1];
+
+        return ['userId' => false, 'message' => $message1, 'showText' => $showText, 'count' => 2];
+    }
+
+    private function insertPw(User $user, User $secondUser, array $textSplitted)
+    {
+        $message = new \AppBundle\Entity\Message();
+        $message->setUserId($secondUser->getId())
+            ->setUserInfo($user)
+            ->setChannel(ChatConfig::getUserPrivateChannelId($secondUser))
+            ->setDate(new \DateTime())
+            ->setText('/privMsg ' . $textSplitted[1]);
+        $this->em->persist($message);
+
+        $message1 = new \AppBundle\Entity\Message();
+        $message1->setUserId($user->getId())
+            ->setUserInfo($user)
+            ->setChannel(ChatConfig::getUserPrivateChannelId($user))
+            ->setDate(new \DateTime())
+            ->setText('/privTo ' . $textSplitted[0] . ' ' . $textSplitted[1]);
+        $this->em->persist($message1);
+
+        return $message1;
+    }
+
+    private function insertErrorMessage(User $user, array $text, string $error)
+    {
+        $message = new \AppBundle\Entity\Message();
+        $message->setUserId($user->getId())
+            ->setUserInfo($user)
+            ->setChannel($this->chatConfig->getUserPrivateChannelId($user))
+            ->setDate(new \DateTime())
+            ->setText($error . ' ' . $text[0]);
+        $this->em->persist($message);
+    }
+
+    private function privToShow(array $text)
+    {
+        $textSplitted = explode(' ', $text[1]);
+        $text = $this->translator->trans('chat.privTo', ['chat.user' =>  $textSplitted[0]], 'chat', $this->locale) . ' ' . $textSplitted[1];
+
+        return [
+            'showText' => $text,
+            'userId' => false
+        ];
+    }
+
+    private function privFromShow(array $text)
+    {
+        $text = $this->translator->trans('chat.privFrom', [], 'chat', $this->locale) . ' ' . $text[1];
+
+        return [
+            'showText' => $text,
+            'userId' => false
         ];
     }
 

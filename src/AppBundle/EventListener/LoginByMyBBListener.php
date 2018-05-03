@@ -43,7 +43,8 @@ class LoginByMyBBListener implements EventSubscriberInterface
      */
     private $userManager;
 
-    public function __construct(Session $session, EntityManagerInterface $em, TokenStorageInterface $tokenStorage, RouterInterface $router, RequestStack $request, UserManagerInterface $userManager)
+    public function __construct(Session $session, EntityManagerInterface $em, TokenStorageInterface $tokenStorage,
+        RouterInterface $router, RequestStack $request, UserManagerInterface $userManager)
     {
         $this->em = $em;
         $this->tokenStorage = $tokenStorage;
@@ -55,7 +56,7 @@ class LoginByMyBBListener implements EventSubscriberInterface
 
     public function onKernelController(FilterControllerEvent $event)
     {
-        if (!ChatConfig::MYBB) {
+        if (!ChatConfig::getMyBB()) {
             return;
         }
         $event->stopPropagation();

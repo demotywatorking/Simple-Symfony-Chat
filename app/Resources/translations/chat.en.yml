@@ -9,6 +9,14 @@ channel:
     Default: Default
     Channel 2: Channel 2
     Private: Private
+    Moderator: Moderator
+    Admin: Administrator
 
 chat:
     roll: rolls dice chat.dice and gets
+    privFrom: (PM)
+    privTo: (PM to chat.user)
+
+error:
+    userNotFound: User chat.nick not found
+    wrongUsername: Missing username

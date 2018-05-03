@@ -9,6 +9,14 @@ channel:
     Default: Domyślny
     Channel 2: Kanał 2
     Private: Prywatny
+    Moderator: Moderator
+    Admin: Administrator
 
 chat:
     roll: rzuca kostką chat.dice i otrzymuje wyniki
+    privFrom: (PW)
+    privTo: (PW do chat.user)
+
+error:
+    userNotFound: Użytkownik chat.nick nie znaleziony
+    wrongUsername: Nie podano użytkownika

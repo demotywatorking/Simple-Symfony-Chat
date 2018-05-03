@@ -84,9 +84,10 @@
                 </div>
                 <div class="panel-body" id="messages-box">
                     {%  for message in messages|sort %}
-                        <div class="message" data-id="{{ message.id }}">
+                        <div class="message {{ (user.username in message.text) ? 'light' }}"
+                             data-id="{{ message.id }}">
                             <span class="date">({{ message.date|date('H:i:s') }})</span>
-                            <span class="{{ message.user_role }} text-bold">{{ message.username }}:</span>
+                            <span class="{{ message.user_role }} text-bold nick">{{ message.username }}</span>:
                             <span class="message-text">
                                 {{ message.text|raw }}
                             </span>

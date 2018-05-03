@@ -58,8 +58,6 @@ class Channel
         $this->userOnline->updateUserOnline($user, $channel);
 
         $this->session->set('channel', $channel);
-        $lastId = $this->session->get('lastId');
-        $this->session->set('lastId', $lastId);
         $this->session->set('changedChannel', 1);
 
         return true;

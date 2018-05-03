@@ -62,6 +62,17 @@ $(document).ready(function()
         emoticonsOpened++;
     });
 
+    $('body').on('click', '.nick', function(){
+        insertNick($(this).text());
+    });
+
+    function insertNick(nick)
+    {
+        var value = $('#message-text').val();
+        $('#message-text').val(value + nick);
+        $('#message-text').focus();
+    }
+
     function sendMessage()
     {
         var text = $('#message-text').val();
@@ -87,10 +98,11 @@ $(document).ready(function()
                 if (self.role === 'administrator' || self.role === 'moderator') {
                     del = '<span class="pull-right kursor" data-id="' + msg.id + '">&times;</span>';
                 }
+                var light = checkIfMessageHaveNick(msg.text);
                 $('#messages-box').append(
-                    '<div class="message" data-id="' + msg.id + '"><span class="date">('
+                    '<div class="message' + light + '" data-id="' + msg.id + '"><span class="date">('
                     + d +
-                    ')</span> <span class="' + self.role + ' text-bold">' + msg.userName + ':</span><span class="message-text"> '
+                    ')</span> <span class="' + self.role + ' text-bold nick">' + msg.userName + '</span>:<span class="message-text"> '
                     + parseMessage(msg.text) + '</span>' + del + '</div>'
                 );
             }
@@ -101,6 +113,15 @@ $(document).ready(function()
             }
             setTimeout(scrollMessages, 100);
         });
+    }
+
+    function checkIfMessageHaveNick(text)
+    {
+        if (text.search(self.username) !== -1) {
+            return ' light';
+        } else {
+            return '';
+        }
     }
 
     function refreshChat()
@@ -171,11 +192,11 @@ $(document).ready(function()
         if (self.role === 'administrator' || self.role === 'moderator') {
             del = '<span class="pull-right kursor" data-id="' + val.id + '">&times;</span>';
         }
+        var light = checkIfMessageHaveNick(val.text);
         $('#messages-box').append(
-
-            '<div class="message" data-id="' + val.id + '"><span class="date">('
+            '<div class="message ' + light + ' data-id="' + val.id + '"><span class="date">('
             + d +
-            ')</span> <span class="' + val.user_role + ' text-bold">' + val.username + ':</span><span class="message-text"> '
+            ')</span> <span class="' + val.user_role + ' text-bold nick">' + val.username + '</span>:<span class="message-text"> '
             + parseMessage(val.text) + '</span>' + del + '</div>'
         );
     }
