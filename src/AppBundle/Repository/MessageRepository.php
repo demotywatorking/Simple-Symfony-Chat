@@ -22,9 +22,7 @@ class MessageRepository extends \Doctrine\ORM\EntityRepository
 
         return $this->createQueryBuilder('m')
                 ->where('m.date >= :date')
-                ->andWhere('m.channel = :channel')
-                ->andWhere('m.text NOT LIKE :text')
-                ->orWhere('m.channel = :channelPrivate and m.text LIKE :textPrivate')
+                ->andWhere('((m.channel = :channel AND m.text NOT LIKE :text) OR (m.channel = :channelPrivate and m.text LIKE :textPrivate))')
                 ->orderBy('m.date', 'DESC')
                 ->setParameter('date', $date)
                 ->setParameter('channel', $channel)

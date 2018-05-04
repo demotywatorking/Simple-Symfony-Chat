@@ -9,6 +9,18 @@ $(document).ready(function()
 {
     Notification.requestPermission();
 
+    var active = true;
+    var newMessagesCount = 0;
+    var title = document.title;
+
+    window.onblur = function(){active = false;};
+    window.onfocus = function(){
+        active = true;
+        newMessagesCount = 0;
+        document.title = title;
+        setTimeout(removeLineNewMessages, 8000);
+    };
+
     var channelChanged = 0;
     var emoticonsOpened = 0;
     startChat();
@@ -122,6 +134,13 @@ $(document).ready(function()
         return 0;
     }
 
+    function addLineNewMessages()
+    {
+        if (!active && !newMessagesCount) {
+            $('#messages-box').append('<div class="line" data-content="' + chatText.new + '"></div>');
+        }
+    }
+
     function refreshChat()
     {
         var params = {
@@ -134,6 +153,7 @@ $(document).ready(function()
             url: refreshPath
         }).done(function(msg){
             if (msg.messages[0]) {
+                addLineNewMessages();
                 $.each( msg.messages, function( key, val ) {
                     if(val.text == 'delete') {
                         $('div[data-id="' + val.id + '"]').remove();
@@ -205,11 +225,14 @@ $(document).ready(function()
         }
         var light = checkIfMessageHaveNick(val.text);
         $('#messages-box').append(
-            '<div class="message ' + light + ' data-id="' + val.id + '"><span class="date">('
-            + d +
+            '<div class="message ' + light + '" data-id="' + val.id + '"><span class="date">(' + d +
             ')</span> <span class="' + val.user_role + ' text-bold nick">' + val.username + '</span>:<span class="message-text"> '
             + parseMessage(val.text) + '</span>' + del + '</div>'
         );
+        if (!active) {
+            newMessagesCount++;
+            document.title = '(' + newMessagesCount + ') ' + title;
+        }
     }
 
     function scrollMessages()
@@ -346,6 +369,13 @@ $(document).ready(function()
 
             var notification = new Notification(username, { 'body' :  messageText });
             setTimeout(notification.close.bind(notification), 5000);
+        }
+    }
+
+    function removeLineNewMessages()
+    {
+        if ($('.line').length) {
+            $('.line').remove();
         }
     }
 });

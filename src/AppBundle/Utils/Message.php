@@ -53,15 +53,12 @@ class Message
         $messages = $this->em->getRepository('AppBundle:Message')
             ->getMessagesFromLastDay($this->config->getMessageLimit(), $channel, $channelPrivate);
 
-        if ($messages) {
-            $this->session->set('lastId', $messages[0]->getId());
-        } else {
-            $this->session->set(
-                'lastId',
-                $this->em->getRepository('AppBundle:Message')
-                ->getIdFromLastMessage()
-            );
-        }
+        $this->session->set(
+            'lastId',
+            $this->em->getRepository('AppBundle:Message')
+            ->getIdFromLastMessage()
+        );
+
         $this->changeMessagesToArray($messages, $user);
 
         return $this->checkIfMessagesCanBeDisplayed($messages);
