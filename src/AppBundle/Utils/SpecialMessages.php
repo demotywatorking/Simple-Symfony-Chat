@@ -20,12 +20,17 @@ class SpecialMessages
      * @var EntityManagerInterface
      */
     private $em;
+    /**
+     * @var ChatConfig
+     */
+    private $config;
 
-    public function __construct(TranslatorInterface $translator, EntityManagerInterface $em)
+    public function __construct(TranslatorInterface $translator, EntityManagerInterface $em, ChatConfig $config)
     {
         $this->translator = $translator;
         $this->locale = $translator->getLocale();
         $this->em = $em;
+        $this->config = $config;
     }
 
     public function specialMessagesDisplay(string $text, User $user):array

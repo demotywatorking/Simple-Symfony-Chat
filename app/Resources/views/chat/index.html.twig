@@ -61,7 +61,7 @@
 
 {% block content %}
     <div class="row chat" id="chat-row-main">
-        <div class="col-xs-12 padding-bottom-small" id="info-box">
+        <div class="col-xs-12" id="info-box">
             <select class="custom-select" id="channels">
                 {% for key,value in channels %}
                     <option value="{{ key }}" {%  if (key == user_channel) %}selected{% endif %}>{{ ('channel.' ~ value)|trans }}</option>
@@ -82,20 +82,23 @@
                 <div class="panel-heading text-center">
                     {{ 'messages'|trans }}
                 </div>
-                <div class="panel-body" id="messages-box">
-                    {%  for message in messages|sort %}
-                        <div class="message {{ (user.username in message.text) ? 'light' }}"
-                             data-id="{{ message.id }}">
-                            <span class="date">({{ message.date|date('H:i:s') }})</span>
-                            <span class="{{ message.user_role }} text-bold nick">{{ message.username }}</span>:
-                            <span class="message-text">
-                                {{ message.text|raw }}
-                            </span>
-                            {% if is_granted('ROLE_MODERATOR') %}
-                            <span class="pull-right kursor" data-id="{{ message.id }}">&times;</span>
-                            {% endif %}
-                        </div>
-                    {% endfor %}
+                <div class="panel-body panel-messages">
+                    <div id="messages-box">
+                        {% for message in messages|sort %}
+                            <div class="message {{ (user.username in message.text) ? 'light' }}"
+                                 data-id="{{ message.id }}">
+                                <span class="date">({{ message.date|date('H:i:s') }})</span>
+                                <span class="{{ message.user_role }} text-bold nick">{{ message.username }}</span>:
+                                <span class="message-text">
+                                    {{ message.text|raw }}
+                                </span>
+                                {% if is_granted('ROLE_MODERATOR') %}
+                                <span class="pull-right kursor" data-id="{{ message.id }}">&times;</span>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+                    </div>
+                    <div id="typing"></div>
                 </div>
             </div>
         </div>
@@ -114,16 +117,17 @@
                 </div>
             </div>
         </div>
-        <div class="col-xs-12 margin-top-minus">
+        <div class="col-xs-12" id="emoticon-row">
             <div class="row">
-                <div class="col-xs-12">
-                    <button class="btn btn-success" id="emoticons">{{ 'emoticons'|trans }}</button>
-                    <div class="hidden-div" name="emoticons"></div>
-                </div>
-                <div class="col-xs-11">
+                <div class="emoticons-div" name="emoticons"></div>
+            </div>
+        </div>
+        <div class="col-xs-12 margin-top-minus" id="text-row">
+            <div class="row">
+                <div class="col-xs-10">
                     <textarea class="form-control" id="message-text" cols="50" rows="1"></textarea>
                 </div>
-                <div class="col-xs-1">
+                <div class="col-xs-2">
                     <button class="btn btn-success btn-block" id="send">{{ 'send'|trans }}</button>
                 </div>
             </div>

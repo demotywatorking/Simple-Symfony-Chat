@@ -49,6 +49,13 @@ class UserOnline
     private $channel;
 
     /**
+     * $var bool
+     *
+     * @ORM\Column(name="typing", type="boolean", nullable=true)
+     */
+    private $typing;
+
+    /**
      * @return int Channel's id
      */
     public function getChannel()
@@ -171,7 +178,28 @@ class UserOnline
             'user_id' => $this->userId,
             'username' => $this->userInfo->getUsername(),
             'user_role' => $this->userInfo->getChatRoleAsText(),
+            'typing' => $this->typing
         ];
+    }
+
+    /**
+     * @param mixed $typing
+     *
+     * @return UserOnline
+     */
+    public function setTyping($typing)
+    {
+        $this->typing = $typing;
+
+        return $this;
+}
+
+    /**
+     * @return mixed
+     */
+    public function getTyping()
+    {
+        return $this->typing;
     }
 }
 

@@ -67,7 +67,7 @@ class UserOnline
      * @param User $user User instance
      * @param int $channel Channel's id
      */
-    public function updateUserOnline(User $user, int $channel)
+    public function updateUserOnline(User $user, int $channel, bool $typing)
     {
         $online = $this->em->getRepository('AppBundle:UserOnline')
                     ->findOneBy([
@@ -79,6 +79,7 @@ class UserOnline
         }
         $online->setOnlineTime(new \DateTime('now'));
         $online->setChannel($channel);
+        $online->setTyping($typing);
 
         $this->em->persist($online);
         $this->em->flush();

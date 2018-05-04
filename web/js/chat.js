@@ -9,22 +9,11 @@ $(document).ready(function()
 {
     Notification.requestPermission();
 
-    function notification(text)
-    {
-        if (Notification.permission === "granted") {
-            // If it's okay let's create a notification
-            var username = text.username;
-            var messageText = text.text;
-
-            var notification = new Notification(username, { 'body' :  messageText });
-            setTimeout(notification.close.bind(notification), 5000);
-        }
-    }
     var channelChanged = 0;
     var emoticonsOpened = 0;
     startChat();
     scrollMessages();
-    setTimeout(refreshChat, 2000);
+    setTimeout(refreshChat, 1500);
 
     //sending new message when clicked on button
     $('body').on('click', '#send', function(){
@@ -50,7 +39,7 @@ $(document).ready(function()
     $('.emoticon-img').click(function(){
         var value = $('#message-text').val();
         var emoticon = $(this).attr('alt');
-        $('#message-text').val(value + emoticon);
+        $('#message-text').val(value + emoticon).focus();
     });
 
     $('#emoticons').click(function(){
@@ -124,10 +113,24 @@ $(document).ready(function()
         }
     }
 
+    function isUserTyping()
+    {
+        let value = $('#message-text').val();
+        if (value && value.search('/priv') === -1) {
+            return 1;
+        }
+        return 0;
+    }
+
     function refreshChat()
     {
+        var params = {
+            typing : isUserTyping()
+        };
         $.ajax({
+            method: "POST",
             dataType: "json",
+            data: params,
             url: refreshPath
         }).done(function(msg){
             if (msg.messages[0]) {
@@ -148,9 +151,17 @@ $(document).ready(function()
             }
             if (msg.usersOnline) {
                 $('#users-box').html('');
+                cleanTypingUsers();
+                var typing = new Array();
                 $.each( msg.usersOnline, function( key, val ) {
                     createNewUser(val);
+                    if (val.typing) {
+                        typing.push(val.username);
+                    }
                 });
+                if (typing.length) {
+                    insertTypingUsers(typing);
+                }
             }
             if (channelChanged === 1) {
                 channelChanged = 0;
@@ -296,20 +307,45 @@ $(document).ready(function()
         return replacedText;
     }
 
-    function show(id)
-    {
-        $('div[name="'+id+'"]').css({  top: -35, left: 0 });
-        $('div[name="'+id+'"]').fadeIn();
-        //$('div[name="'+id+'"]').draggable();
-    }
-
-    function hide(id)
-    {
-        $('div[name="'+id+'"]').fadeOut();
-    }
-
     function changeLocale(locale)
     {
         window.location = languagePath[locale];
+    }
+
+    function cleanTypingUsers()
+    {
+        $('#typing').text('');
+    }
+
+    function insertTypingUsers(typing)
+    {
+        cleanTypingUsers();
+        typing.forEach(function(element, index, array) {
+            let value = $('#typing').text();
+            if (index === 0) {
+                $('#typing').text(value + element);
+            } else {
+                $('#typing').text(value + ', ' + element);
+            }
+        });
+        let value = $('#typing').text();
+        if (typing.length == 1){
+            $('#typing').text(value + ' ' + chatText.typing1);
+        } else {
+            $('#typing').text(value + ' ' + chatText.typing2);
+        }
+
+    }
+
+    function notification(text)
+    {
+        if (Notification.permission === "granted") {
+            // If it's okay let's create a notification
+            var username = text.username;
+            var messageText = text.text;
+
+            var notification = new Notification(username, { 'body' :  messageText });
+            setTimeout(notification.close.bind(notification), 5000);
+        }
     }
 });

@@ -55,7 +55,7 @@ class Channel
         if (!array_key_exists($channel, $this->config->getChannels($user))) {
             return false;
         }
-        $this->userOnline->updateUserOnline($user, $channel);
+        $this->userOnline->updateUserOnline($user, $channel, 0);
 
         $this->session->set('channel', $channel);
         $this->session->set('changedChannel', 1);

@@ -38,7 +38,7 @@ class ChatController extends Controller
                     ->getMessagesInIndex($user);
 
         $usersOnlineService = $this->get('chat.OnlineUsers');
-        $usersOnlineService->updateUserOnline($user, $channel);
+        $usersOnlineService->updateUserOnline($user, $channel, 0);
         $usersOnline = $usersOnlineService->getOnlineUsers($user->getId(), $channel);
 
         $channels = $this->get('chat.ChatConfig')->getChannels($user);
@@ -85,13 +85,15 @@ class ChatController extends Controller
      *
      * @return JsonResponse returns messages and users online
      */
-    public function refreshAction(): JsonResponse
+    public function refreshAction(Request $request): JsonResponse
     {
         $messageService = $this->get('chat.Message');
         $messages = $messageService->getMessagesFromLastId($this->getUser());
+        $typing = $request->request->get('typing');
+        $typing = in_array($typing, [0,1]) ? $typing : 0;
 
         $usersOnlineService = $this->get('chat.OnlineUsers');
-        $usersOnlineService->updateUserOnline($this->getUser(), $this->get('session')->get('channel'));
+        $usersOnlineService->updateUserOnline($this->getUser(), $this->get('session')->get('channel'), $typing);
         $usersOnline = $usersOnlineService->getOnlineUsers($this->getUser()->getId(), $this->get('session')->get('channel'));
 
         $return = [
