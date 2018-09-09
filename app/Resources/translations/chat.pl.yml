@@ -29,8 +29,6 @@ channel:
     Private: Prywatny
     Moderator: Moderator
     Admin: Administrator
-    Elders: Starsi
-    Shiny: Shiny
 
 chat:
     roll: rzuca kostką chat.dice i otrzymuje wyniki
