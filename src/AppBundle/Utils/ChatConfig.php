@@ -3,6 +3,9 @@
 namespace AppBundle\Utils;
 
 use AppBundle\Entity\User;
+use AppBundle\Repository\InviteRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 use Symfony\Component\Security\Core\Authorization\AuthorizationCheckerInterface;
 
 class ChatConfig
@@ -19,38 +22,83 @@ class ChatConfig
 
     /**
      * @var array array of channels
+     * DO NOT CHANGE FIRST CHANNEL
      */
     private const DEFAULT_CHANNELS = [
         1 => 'Default',
-        2 => 'Channel 2'
     ];
 
     /**
-     * var bool Login by MyBB forum user
+     * @var bool Login by MyBB forum user
      */
     private const MYBB = 0;
 
     /**
-     * var bool Login by phpBB forum user
+     * @var bool Login by phpBB forum user
      */
     private const PHPBB = 0;
+
+    /**
+     * @var int moderator channel id
+     */
+    private const MODERATOR_CHANNEL_ID = 3;
+
+    /**
+     * @var int admin channel id
+     */
+    private const ADMIN_CHANNEL_ID = 4;
 
     /**
      * @var AuthorizationCheckerInterface
      */
     private $auth;
 
-    public function __construct(AuthorizationCheckerInterface $auth)
+    /**
+     * @var int Bot Id
+     */
+    private const BOT_ID = 1;
+
+    /**
+     * @var int added to private channel id
+     */
+    private const PRIVATE_CHANNEL_ADD = 1000000;
+
+    /**
+     * @var int added to private message channel id
+     */
+    private const PRIVATE_MESSAGE_ADD = 500000;
+    /**
+     * @var EntityManagerInterface
+     */
+    private $em;
+    /**
+     * @var SessionInterface
+     */
+    private $session;
+
+    public function __construct(AuthorizationCheckerInterface $auth, EntityManagerInterface $em, SessionInterface $session)
     {
         $this->auth = $auth;
+        $this->em = $em;
+        $this->session = $session;
     }
 
     /**
+     * @param User $user
+     *
      * @return array Array of channels
      */
     public function getChannels(User $user): array
     {
-        return self::DEFAULT_CHANNELS + $this->specialChannels() + $this->getUserPrivateChannel($user);
+        return self::DEFAULT_CHANNELS +
+            $this->specialChannels() +
+            $this->getUserPrivateChannel($user) +
+            $this->getChannelsFromInvitations($user);
+    }
+
+    public static function getBotId(): int
+    {
+        return self::BOT_ID;
     }
 
     public static function getMyBB()
@@ -63,45 +111,78 @@ class ChatConfig
         return self::PHPBB;
     }
 
-    /**
-     * @return int Inactive time
-     */
     public function getInactiveTime(): int
     {
         return self::INACTIVE_TIME;
     }
 
-    /**
-     * @return int messages limit
-     */
     public function getMessageLimit(): int
     {
         return self::MESSAGE_LIMIT;
     }
 
-    public function getUserPrivateChannel(User $user):array
+    public function getUserPrivateChannel(User $user): array
     {
-        $channelId = 1000000 + $user->getId();
+        $channelId = self::PRIVATE_CHANNEL_ADD + $user->getId();
         return [
             $channelId => 'Private'
         ];
     }
 
-    public function getUserPrivateChannelId(User $user):int
+    public function getUserPrivateChannelId(User $user): int
     {
-        return 1000000 + $user->getId();
+        return self::PRIVATE_CHANNEL_ADD + $user->getId();
     }
 
-    private function specialChannels():array
+    public function getUserPrivateMessageChannelId(User $user): int
+    {
+        return self::PRIVATE_MESSAGE_ADD + $user->getId();
+    }
+
+    private function specialChannels(): array
     {
         $array = [];
         if ($this->auth->isGranted('ROLE_ADMIN')) {
-            $array[4] = 'Admin';
+            $array[self::ADMIN_CHANNEL_ID] = $this->getChannelName(self::ADMIN_CHANNEL_ID);
         }
         if ($this->auth->isGranted('ROLE_MODERATOR')) {
-            $array[3] = 'Moderator';
+            $array[self::MODERATOR_CHANNEL_ID] = $this->getChannelName(self::MODERATOR_CHANNEL_ID);
         }
         return $array;
+    }
+
+    private function getChannelsFromInvitations(User $user): array
+    {
+        $invitations = $this->em->getRepository('AppBundle:Invite')->findBy([
+            'userId' => $user->getId()
+        ]);
+        if (!$invitations) {
+            return [];
+        }
+
+        $return = [];
+        foreach ($invitations as $invitation) {
+            $return[$invitation->getChannelId()] = $this->getChannelName($invitation->getChannelId());
+        }
+        return $return;
+    }
+
+    private function getChannelName(int $id): string
+    {
+        switch ($id) {
+            case self::ADMIN_CHANNEL_ID:
+                return 'Admin';
+            case self::MODERATOR_CHANNEL_ID:
+                return 'Moderator';
+            default:
+                return $this->getUserPrivateChannelName($id);
+        }
+    }
+
+    private function getUserPrivateChannelName(int $id): string
+    {
+        $id = $id - self::PRIVATE_CHANNEL_ADD;
+        return $this->em->find('AppBundle:User', $id)->getUsername();
     }
 
 }

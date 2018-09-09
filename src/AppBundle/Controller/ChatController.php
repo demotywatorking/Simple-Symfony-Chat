@@ -2,6 +2,10 @@
 
 namespace AppBundle\Controller;
 
+use AppBundle\Utils\Channel;
+use AppBundle\Utils\ChatConfig;
+use AppBundle\Utils\Message;
+use AppBundle\Utils\UserOnline;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Security;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -9,11 +13,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
-/**
- * Class ChatController
- * @package AppBundle\Controller
- */
 class ChatController extends Controller
 {
     /**
@@ -24,32 +25,40 @@ class ChatController extends Controller
      * Get messages from last 24h and users online then show chat's main window,
      * last messages and send variables to twig to configure var to jQuery
      *
-     * @param Request $request A Request instance
+     * @param Request $request
+     * @param Message $message
+     * @param UserOnline $userOnline
+     * @param Channel $channelService
+     * @param ChatConfig $config
+     *
+     * @param SessionInterface $session
      *
      * @return Response Return main page with all start information
      */
-    public function showAction(Request $request): Response
-    {
+    public function showAction(
+        Request $request,
+        Message $message,
+        UserOnline $userOnline,
+        Channel $channelService,
+        ChatConfig $config,
+        SessionInterface $session
+    ): Response {
         $user = $this->getUser();
-        $channel = $this->get('session')->get('channel');
-        $locale = $request->getLocale();
+        $channel = $session->get('channel');
+        if (!$channelService->checkIfUserCanBeOnThatChannel($user, $channel)) {
+            $channel = 1;
+            $session->set('channel', 1);
+        }
 
-        $messages = $this->get('chat.Message')
-                    ->getMessagesInIndex($user);
-
-        $usersOnlineService = $this->get('chat.OnlineUsers');
-        $usersOnlineService->updateUserOnline($user, $channel, 0);
-        $usersOnline = $usersOnlineService->getOnlineUsers($user->getId(), $channel);
-
-        $channels = $this->get('chat.ChatConfig')->getChannels($user);
+        $userOnline->updateUserOnline($user, $channel, 0);
 
         return $this->render('chat/index.html.twig',[
-            'messages' => $messages,
-            'usersOnline' => $usersOnline,
+            'messages' => $message->getMessagesInIndex($user),
+            'usersOnline' => $userOnline->getOnlineUsers($user->getId(), $channel),
             'user' => $user,
             'user_channel' => $channel,
-            'channels' => $channels,
-            'locale' => $locale
+            'channels' => $config->getChannels($user),
+            'locale' => $request->getLocale()
         ]);
     }
 
@@ -62,16 +71,16 @@ class ChatController extends Controller
      * last refresh and calling this method
      *
      * @param Request $request A Request instance
+     * @param Message $message
      *
      * @return JsonResponse returns status success or failure and new messages
      */
-    public function addAction(Request $request): JsonResponse
+    public function addAction(Request $request, Message $message): Response
     {
         $messageText = $request->get('text');
         $user = $this->getUser();
 
-        $messageService = $this->get('chat.Message');
-        $status = $messageService->addMessageToDatabase($user, $messageText);
+        $status = $message->addMessageToDatabase($user, $messageText);
 
         return $this->json($status);
     }
@@ -83,22 +92,44 @@ class ChatController extends Controller
      *
      * Get new messages from last refresh and get users online
      *
+     * @param Request $request
+     * @param Message $messageService
+     * @param UserOnline $userOnlineService
+     * @param Channel $channel
+     * @param SessionInterface $session
+     *
      * @return JsonResponse returns messages and users online
      */
-    public function refreshAction(Request $request): JsonResponse
-    {
-        $messageService = $this->get('chat.Message');
+    public function refreshAction(
+        Request $request,
+        Message $messageService,
+        UserOnline $userOnlineService,
+        Channel $channel,
+        SessionInterface $session
+    ): Response {
         $messages = $messageService->getMessagesFromLastId($this->getUser());
         $typing = $request->request->get('typing');
         $typing = in_array($typing, [0,1]) ? $typing : 0;
 
-        $usersOnlineService = $this->get('chat.OnlineUsers');
-        $usersOnlineService->updateUserOnline($this->getUser(), $this->get('session')->get('channel'), $typing);
-        $usersOnline = $usersOnlineService->getOnlineUsers($this->getUser()->getId(), $this->get('session')->get('channel'));
+        $changeChannel = 0;
+        $userOnlineService->updateUserOnline($this->getUser(), $session->get('channel'), $typing);
+
+        if (!$channel->checkIfUserCanBeOnThatChannel($this->getUser(), $session->get('channel'))) {
+            $session->set('channel', 1);
+            $session->set('channelChanged', 1);
+            $changeChannel = 1;
+        }
+
+        $usersOnline = $userOnlineService
+            ->getOnlineUsers(
+            $this->getUser()->getId(),
+            $session->get('channel')
+        );
 
         $return = [
             'messages' => $messages,
-            'usersOnline' => $usersOnline
+            'usersOnline' => $usersOnline,
+            'kickFromChannel' => $changeChannel
         ];
         return new JsonResponse($return);
     }
@@ -113,10 +144,11 @@ class ChatController extends Controller
      * add message to database that message was deleted and by whom
      *
      * @param Request $request A Request instance
+     * @param Message $message
      *
      * @return JsonResponse status true or false
      */
-    public function deleteAction(Request $request): JsonResponse
+    public function deleteAction(Request $request, Message $message): Response
     {
         $id = $request->get('messageId');
         $user = $this->getUser();
@@ -124,7 +156,7 @@ class ChatController extends Controller
             return $this->json(['status' => 0]);
         }
 
-        $status = $this->get('chat.Message')->deleteMessage($id, $user);
+        $status = $message->deleteMessage($id, $user);
 
         return $this->json(['status' => $status]);
     }
@@ -133,15 +165,15 @@ class ChatController extends Controller
      * @Route("/chat/logout", name="chat_logout")
      *
      * Logout from chat
-     *
      * Delete User's info from online users in database and then redirect to logout in fosuserbundle
+     *
+     * @param UserOnline $userOnlineService
      *
      * @return RedirectResponse Redirect to fos logout
      */
-    public function logoutAction(): RedirectResponse
+    public function logoutAction(UserOnline $userOnlineService): Response
     {
-        $usersOnlineService = $this->get('chat.OnlineUsers');
-        $usersOnlineService->deleteUserWhenLogout($this->getUser()->getId());
+        $userOnlineService->deleteUserWhenLogout($this->getUser()->getId());
 
         return $this->redirectToRoute('fos_user_security_logout');
     }
@@ -154,13 +186,13 @@ class ChatController extends Controller
      * Checking if channel exists and change user's channel in session
      *
      * @param Request $request A Request instance
+     * @param Channel $channelService
      *
      * @return JsonResponse returns status of changing channel
      */
-    public function changeChannelAction(Request $request): JsonResponse
+    public function changeChannelAction(Request $request, Channel $channelService): Response
     {
-        $channelService = $this->get('chat.Channel');
-        $channel = $request->get('channel');
+        $channel = $request->request->get('channel');
         if (!$channel) {
             return $this->json('false');
         }

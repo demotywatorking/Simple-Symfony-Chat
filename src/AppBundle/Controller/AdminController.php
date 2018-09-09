@@ -3,6 +3,7 @@
 namespace AppBundle\Controller;
 
 
+use AppBundle\Utils\AdminPanel;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -13,13 +14,10 @@ class AdminController extends Controller
      *
      * Gets info about Users
      */
-    public function adminAction()
+    public function adminAction(AdminPanel $adminPanel)
     {
-        $adminPanel = $this->get('chat.AdminPanel');
-        $users = $adminPanel->getAllUsers();
-
         return $this->render('admin/index.html.twig', [
-            'users' => $users
+            'users' => $adminPanel->getAllUsers()
         ]);
     }
 
@@ -28,9 +26,8 @@ class AdminController extends Controller
      *
      * Changes user's role
      */
-    public function adminPromoteAction(int $id, string $role)
+    public function adminPromoteAction(int $id, string $role, AdminPanel $adminPanel)
     {
-        $adminPanel = $this->get('chat.AdminPanel');
         $adminPanel->changeUsersRole($id, $role);
 
         return $this->redirectToRoute('chat_admin');

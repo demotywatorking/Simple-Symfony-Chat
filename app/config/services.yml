@@ -24,7 +24,6 @@ services:
     # and have a tag that allows actions to type-hint services
     AppBundle\Controller\:
         resource: '../../src/AppBundle/Controller'
-        public: true
         tags: ['controller.service_arguments']
 
     checkLoginMyBB:
