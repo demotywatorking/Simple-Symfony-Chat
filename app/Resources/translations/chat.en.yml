@@ -29,8 +29,6 @@ channel:
     Private: Private
     Moderator: Moderator
     Admin: Administrator
-    Elders: Elders
-    Shiny: Shiny
 
 chat:
     roll: rolls dice chat.dice and gets
